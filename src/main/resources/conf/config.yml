@@ -1,0 +1,68 @@
+### ANY CHANGES TO THIS FILE DOES NOT REQUIRE A RESTART ###
+
+#This will create this metric in all the tiers, under this path
+metricPrefix: Custom Metrics|Docker
+
+#This will create it in specific Tier. Replace <TIER_NAME>
+#metricPrefix: Server|Component:<TIER_NAME>|Custom Metrics|Docker
+
+# If the TCP Socket is Not Enabled, use this.
+# Either the Machine Agent should be run as root,
+# Or the current user needs password-less sudo access
+unixSocket:
+    commandFile: monitors/DockerMonitor/socket-command.sh
+
+# If the Docker is listening to the TCP port, use this.
+# The advantage is same machine agent can query multiple docker instances
+#tcpSockets:
+#    - baseUrl: http://192.168.1.134:2375
+#      name: Server1
+
+#    - baseUrl: http://192.168.1.134:2375
+
+
+# List of metrics that needs to be fetched
+metrics:
+    containers:
+        metrics:
+            - SizeRw: SizeRw
+            - SizeRootFs: SizeRootFs
+
+    info:
+        metrics:
+            - Containers: Container Count
+            - Images: Image Count
+            - MemTotal: Total Memory (MB)
+              multiplier: 0.00000095367431640625
+            - MemoryLimit: MemoryLimit
+            - SwapLimit: SwapLimit
+
+    containerStats:
+        metrics:
+            - network:
+                - rx_dropped: Network|Receive|Dropped
+                - rx_bytes: Network|Receive|MB
+                  multiplier: 0.00000095367431640625
+                - rx_errors: Network|Receive|Errors
+                - rx_packets: Network|Receive|Packets
+                - tx_dropped: Network|Transmit|Dropped
+                - tx_bytes: Network|Transmit|MB
+                  multiplier: 0.00000095367431640625
+                - tx_errors: Network|Transmit|Errors
+                - tx_packets: Network|Transmit|Packets
+
+            - memory_stats:
+                - max_usage: Memory|Max Usage (MB)
+                  multiplier: 0.00000095367431640625
+                - usage: Memory|Current (MB)
+                  multiplier: 0.00000095367431640625
+                - limit: Memory|Limit (MB)
+                  multiplier: 0.00000095367431640625
+                - failcnt: Memory|Fail Count
+
+            - cpu_stats:
+                - system_cpu_usage: CPU|System (Ticks)
+                - cpu_usage:
+                    - usage_in_usermode: CPU|User Mode (Ticks)
+                    - total_usage: CPU|Total (Ticks)
+                    - usage_in_kernelmode: CPU|Kernel (Ticks)

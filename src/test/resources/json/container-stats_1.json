@@ -1,0 +1,136 @@
+{
+  "read": "2015-04-02T16:59:44.241932248-04:00",
+  "network": {
+    "rx_bytes": 1000000000,
+    "rx_packets": 110,
+    "rx_errors": 10,
+    "rx_dropped": 11,
+    "tx_bytes": 1100000000,
+    "tx_packets": 120,
+    "tx_errors": 15,
+    "tx_dropped": 16
+  },
+  "cpu_stats": {
+    "cpu_usage": {
+      "total_usage": 20,
+      "percpu_usage": [5],
+      "usage_in_kernelmode": 5,
+      "usage_in_usermode": 5
+    },
+    "system_cpu_usage": 10,
+    "throttling_data": {
+      "periods": 0,
+      "throttled_periods": 0,
+      "throttled_time": 0
+    }
+  },
+  "memory_stats": {
+    "usage": 11000000,
+    "max_usage": 50000000,
+    "stats": {
+      "active_anon": 19931136,
+      "active_file": 266240,
+      "cache": 790528,
+      "hierarchical_memory_limit": 18446744073709551615,
+      "inactive_anon": 25694208,
+      "inactive_file": 430080,
+      "mapped_file": 0,
+      "pgfault": 3290352,
+      "pgmajfault": 0,
+      "pgpgin": 1671110,
+      "pgpgout": 1671554,
+      "rss": 45531136,
+      "rss_huge": 35651584,
+      "total_active_anon": 19931136,
+      "total_active_file": 266240,
+      "total_cache": 790528,
+      "total_inactive_anon": 25694208,
+      "total_inactive_file": 430080,
+      "total_mapped_file": 0,
+      "total_pgfault": 3290352,
+      "total_pgmajfault": 0,
+      "total_pgpgin": 1671110,
+      "total_pgpgout": 1671554,
+      "total_rss": 45531136,
+      "total_rss_huge": 35651584,
+      "total_unevictable": 0,
+      "total_writeback": 0,
+      "unevictable": 0,
+      "writeback": 0
+    },
+    "failcnt": 0,
+    "limit": 4145242112
+  },
+  "blkio_stats": {
+    "io_service_bytes_recursive": [
+      {
+        "major": 8,
+        "minor": 0,
+        "op": "Read",
+        "value": 0
+      },
+      {
+        "major": 8,
+        "minor": 0,
+        "op": "Write",
+        "value": 843776
+      },
+      {
+        "major": 8,
+        "minor": 0,
+        "op": "Sync",
+        "value": 798720
+      },
+      {
+        "major": 8,
+        "minor": 0,
+        "op": "Async",
+        "value": 45056
+      },
+      {
+        "major": 8,
+        "minor": 0,
+        "op": "Total",
+        "value": 843776
+      }
+    ],
+    "io_serviced_recursive": [
+      {
+        "major": 8,
+        "minor": 0,
+        "op": "Read",
+        "value": 0
+      },
+      {
+        "major": 8,
+        "minor": 0,
+        "op": "Write",
+        "value": 172
+      },
+      {
+        "major": 8,
+        "minor": 0,
+        "op": "Sync",
+        "value": 161
+      },
+      {
+        "major": 8,
+        "minor": 0,
+        "op": "Async",
+        "value": 11
+      },
+      {
+        "major": 8,
+        "minor": 0,
+        "op": "Total",
+        "value": 172
+      }
+    ],
+    "io_queue_recursive": [],
+    "io_service_time_recursive": [],
+    "io_wait_time_recursive": [],
+    "io_merged_recursive": [],
+    "io_time_recursive": [],
+    "sectors_recursive": []
+  }
+}

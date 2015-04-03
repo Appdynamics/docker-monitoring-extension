@@ -1,0 +1,107 @@
+[
+  {
+    "Command": "/bin/sh -c /opt/rabbit/startrabbit.sh",
+    "Created": 1427935809,
+    "Id": "1",
+    "Image": "abeytom/rabbitmq-server:latest",
+    "Names": ["/rabbitmq_rabbit3_1"],
+    "Ports": [
+      {
+        "PrivatePort": 9100,
+        "Type": "tcp"
+      },
+      {
+        "PrivatePort": 9102,
+        "Type": "tcp"
+      },
+      {
+        "PrivatePort": 9104,
+        "Type": "tcp"
+      },
+      {
+        "PrivatePort": 25672,
+        "Type": "tcp"
+      },
+      {
+        "PrivatePort": 4369,
+        "Type": "tcp"
+      },
+      {
+        "PrivatePort": 5672,
+        "Type": "tcp"
+      },
+      {
+        "PrivatePort": 9105,
+        "Type": "tcp"
+      },
+      {
+        "PrivatePort": 15672,
+        "Type": "tcp"
+      },
+      {
+        "PrivatePort": 9101,
+        "Type": "tcp"
+      },
+      {
+        "PrivatePort": 9103,
+        "Type": "tcp"
+      }
+    ],
+    "Status": "Up 20 hours"
+  },
+  {
+    "Command": "/bin/sh -c /opt/rabbit/startrabbit.sh",
+    "Created": 1427935808,
+    "Id": "2",
+    "Image": "abeytom/rabbitmq-server:latest",
+    "Names": [
+      "/rabbitmq_rabbit2_1",
+      "/rabbitmq_rabbit3_1/rabbit2",
+      "/rabbitmq_rabbit3_1/rabbit2_1",
+      "/rabbitmq_rabbit3_1/rabbitmq_rabbit2_1"
+    ],
+    "Ports": [
+      {
+        "PrivatePort": 9101,
+        "Type": "tcp"
+      },
+      {
+        "PrivatePort": 9103,
+        "Type": "tcp"
+      },
+      {
+        "PrivatePort": 9105,
+        "Type": "tcp"
+      },
+      {
+        "PrivatePort": 15672,
+        "Type": "tcp"
+      },
+      {
+        "PrivatePort": 9104,
+        "Type": "tcp"
+      },
+      {
+        "PrivatePort": 25672,
+        "Type": "tcp"
+      },
+      {
+        "PrivatePort": 4369,
+        "Type": "tcp"
+      },
+      {
+        "PrivatePort": 5672,
+        "Type": "tcp"
+      },
+      {
+        "PrivatePort": 9100,
+        "Type": "tcp"
+      },
+      {
+        "PrivatePort": 9102,
+        "Type": "tcp"
+      }
+    ],
+    "Status": "Up 20 hours"
+  }
+]
