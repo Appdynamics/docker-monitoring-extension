@@ -138,6 +138,8 @@ public class DockerMonitor extends AManagedMonitor {
                 printMetrics(container, getMetricConf("containers"), prefix);
                 getContainerResourceStats(containerId, prefix, dataFetcher);
             }
+            printCollectiveObservedCurrent(metricPrefix + "Summary|Running Container Count"
+                    , String.valueOf(containers.size()));
         }
     }
 

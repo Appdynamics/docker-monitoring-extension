@@ -180,6 +180,7 @@ public class DockerMonitorTest {
         map.put(prefix + "|Summary|Total Memory (MB)", "3953");
         map.put(prefix + "|Summary|MemoryLimit", "1");
         map.put(prefix + "|Summary|SwapLimit", "0");
+        map.put(prefix + "|Summary|Running Container Count", "2");
         return map;
     }
 
