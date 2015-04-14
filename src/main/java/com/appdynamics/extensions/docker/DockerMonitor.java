@@ -3,9 +3,12 @@ package com.appdynamics.extensions.docker;
 import com.appdynamics.TaskInputArgs;
 import com.appdynamics.extensions.PathResolver;
 import com.appdynamics.extensions.StringUtils;
+import com.appdynamics.extensions.dashboard.CustomDashboardTask;
 import com.appdynamics.extensions.http.SimpleHttpClient;
 import com.appdynamics.extensions.http.SimpleHttpClientBuilder;
 import com.appdynamics.extensions.util.FileWatcher;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.singularity.ee.agent.systemagent.api.AManagedMonitor;
 import com.singularity.ee.agent.systemagent.api.MetricWriter;
 import com.singularity.ee.agent.systemagent.api.TaskExecutionContext;
@@ -24,9 +27,8 @@ import java.io.FileReader;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by abey.tom on 3/30/15.
@@ -34,23 +36,36 @@ import java.util.Map;
 public class DockerMonitor extends AManagedMonitor {
     public static final Logger logger = LoggerFactory.getLogger(DockerMonitor.class);
     public static final String METRIC_PREFIX = "Custom Metrics|Docker|";
+    public static final BigDecimal BIG_DECIMAL_100 = new BigDecimal("100");
 
     protected boolean initialized;
     protected Map config;
     private String metricPrefix;
 
+    private Cache<String, BigInteger> previousMetricsMap;
+    private Cache<String, String> metricMap;
+
+    private List<String> perMinuteMetricSuffixes;
+    private CustomDashboardTask dashboardTask;
+
     public DockerMonitor() {
         String msg = "Using Monitor Version [" + getImplementationVersion() + "]";
         logger.info(msg);
         System.out.println(msg);
+        previousMetricsMap = CacheBuilder.newBuilder()
+                .expireAfterWrite(10, TimeUnit.MINUTES).build();
+
+        metricMap = CacheBuilder.newBuilder()
+                .expireAfterWrite(1, TimeUnit.HOURS).build();
+
+        dashboardTask = new CustomDashboardTask();
     }
 
     protected void initialize(Map<String, String> argsMap) {
         if (!initialized) {
             final File file = PathResolver.getFile(argsMap.get("config-file"), AManagedMonitor.class);
             if (file != null && file.exists()) {
-                config = readYml(file);
-                setMetricPrefix();
+                reloadConfig(file);
                 initialized = true;
             } else {
                 logger.error("Config file is not found.The config file path {} is resolved to {}",
@@ -61,12 +76,47 @@ public class DockerMonitor extends AManagedMonitor {
                 FileWatcher.watch(file, new FileWatcher.FileChangeListener() {
                     public void fileChanged() {
                         logger.info("The file " + file.getAbsolutePath() + " has changed, reloading the config");
-                        config = readYml(file);
-                        setMetricPrefix();
+                        reloadConfig(file);
                     }
                 });
             }
         }
+    }
+
+    private void reloadConfig(File file) {
+        config = readYml(file);
+        perMinuteMetricSuffixes = (List<String>) config.get("perMinuteMetricSuffixes");
+        setMetricPrefix();
+        if(config!=null){
+            Set<String> instanceNames = getInstanceNames();
+            dashboardTask.updateConfig(instanceNames,metricPrefix, (Map) config.get("customDashboard"));
+        }
+    }
+
+    private Set<String> getInstanceNames() {
+        Map unixSocket = (Map) config.get("unixSocket");
+        Set<String> names = new HashSet<String>();
+        if(unixSocket!=null){
+            String name = (String) unixSocket.get("name");
+            if(name!=null){
+                names.add(name);
+            } else{
+                names.add("");
+            }
+        }
+
+        List<Map> tcpSockets = (List) config.get("tcpSockets");
+        if(tcpSockets!=null){
+            for (Map tcpSocket : tcpSockets) {
+                String name = (String) tcpSocket.get("name");
+                if(name!=null){
+                    names.add(name);
+                } else{
+                    names.add("");
+                }
+            }
+        }
+        return names;
     }
 
     private Map readYml(File file) {
@@ -78,6 +128,7 @@ public class DockerMonitor extends AManagedMonitor {
         }
         return null;
     }
+
 
     public TaskOutput execute(Map<String, String> argsMap, TaskExecutionContext taskExecutionContext) throws TaskExecutionException {
         initialize(argsMap);
@@ -103,6 +154,7 @@ public class DockerMonitor extends AManagedMonitor {
         } else {
             logger.error("Not running the Docker Monitor since there was an error during configuration");
         }
+        dashboardTask.run(metricMap.asMap().keySet());
         return null;
     }
 
@@ -152,6 +204,60 @@ public class DockerMonitor extends AManagedMonitor {
         String resourcePath = "/containers/" + containerId + "/stats";
         JsonNode node = dataFetcher.fetchData(resourcePath, JsonNode.class, false);
         printMetrics(node, getMetricConf("containerStats"), containerName);
+
+        if (node != null) {
+            reportCPUPercentage(containerId, containerName, node);
+            reportMemoryPercentage(containerId, containerName, node);
+        }
+    }
+
+    private void reportMemoryPercentage(String containerId, String containerName, JsonNode node) {
+        JsonNode stats = node.get("memory_stats");
+        if (stats != null) {
+            BigInteger usage = getBigIntegerValue("usage", stats);
+            BigInteger limit = getBigIntegerValue("limit", stats);
+            if (usage != null && limit != null) {
+                printCollectiveObservedAverage(containerName + "|Memory|Current %", percentage(usage, limit));
+            } else {
+                logger.debug("Cannot calculate Memory %, usage={}, limit={}", usage, limit);
+            }
+        } else {
+            logger.warn("The memory stats for container {} is not reported", containerId);
+        }
+    }
+
+    private void reportCPUPercentage(String containerId, String containerName, JsonNode node) {
+        JsonNode stats = node.get("cpu_stats");
+        JsonNode cpuUsage;
+        if (stats != null && (cpuUsage = stats.get("cpu_usage")) != null) {
+            BigInteger totalUsage = getBigIntegerValue("total_usage", cpuUsage);
+            BigInteger systemUsage = getBigIntegerValue("system_cpu_usage", stats);
+            String totalUsageCacheKey = containerId + "|total_usage";
+            String systemUsageCacheKey = containerId + "|system_cpu_usage";
+            BigInteger prevTotalUsage = previousMetricsMap.getIfPresent(totalUsageCacheKey);
+            BigInteger prevSystemUsage = previousMetricsMap.getIfPresent(systemUsageCacheKey);
+            if (prevSystemUsage != null && prevTotalUsage != null && totalUsage != null && systemUsage != null) {
+                logger.debug("Calculating the CPU usage % with, totalUsage={}, systemUsage={}, prevTotalUsage={}, prevSystemUsage={}"
+                        , totalUsage, systemUsage, prevTotalUsage, prevSystemUsage);
+                BigInteger totalCpuDiff = totalUsage.subtract(prevTotalUsage);
+                BigInteger sysUsageDiff = systemUsage.subtract(prevSystemUsage);
+                printCollectiveObservedAverage(containerName + "|CPU|Total %", percentage(totalCpuDiff, sysUsageDiff));
+            } else {
+                logger.warn("Cannot Calculate CPU %, some values are null, totalUsage={}, systemUsage={}, prevTotalUsage={}, prevSystemUsage={}"
+                        , totalUsage, systemUsage, prevTotalUsage, prevSystemUsage);
+            }
+            if (totalUsage != null && systemUsage != null) {
+                logger.debug("Adding data to the cache, totalUsage={}, systemUsage={}"
+                        , totalUsage, systemUsage);
+                previousMetricsMap.put(totalUsageCacheKey, totalUsage);
+                previousMetricsMap.put(systemUsageCacheKey, systemUsage);
+            }
+        }
+    }
+
+    private static String percentage(BigInteger d1, BigInteger d2) {
+        BigDecimal bigDecimal = new BigDecimal(d1).multiply(BIG_DECIMAL_100);
+        return bigDecimal.divide(new BigDecimal(d2), 2, RoundingMode.HALF_UP).setScale(0, BigDecimal.ROUND_HALF_UP).toString();
     }
 
     protected void getDataFromTcpSockets() {
@@ -301,6 +407,7 @@ public class DockerMonitor extends AManagedMonitor {
     }
 
     public void printMetric(String metricName, String metricValue, String aggregation, String timeRollup, String cluster) {
+        metricMap.put(metricName, "");
         MetricWriter metricWriter = getMetricWriter(metricName,
                 aggregation,
                 timeRollup,
@@ -325,6 +432,26 @@ public class DockerMonitor extends AManagedMonitor {
                 MetricWriter.METRIC_TIME_ROLLUP_TYPE_CURRENT,
                 MetricWriter.METRIC_CLUSTER_ROLLUP_TYPE_COLLECTIVE
         );
+        if (StringUtils.hasText(metricValue) && perMinuteMetricSuffixes != null) {
+            for (String suffix : perMinuteMetricSuffixes) {
+                if (metricName.endsWith(suffix)) {
+                    BigInteger value = previousMetricsMap.getIfPresent(metricName);
+                    if (value != null) {
+                        BigInteger diff = new BigInteger(metricValue).subtract(value);
+                        printCollectiveObservedAverage(metricName + " Per Minute", diff.toString());
+                    }
+                    previousMetricsMap.put(metricName, new BigInteger(metricValue));
+                }
+            }
+        }
+    }
+
+    protected void printCollectiveObservedAverage(String metricName, String metricValue) {
+        printMetric(metricPrefix + metricName, metricValue,
+                MetricWriter.METRIC_AGGREGATION_TYPE_OBSERVATION,
+                MetricWriter.METRIC_TIME_ROLLUP_TYPE_AVERAGE,
+                MetricWriter.METRIC_CLUSTER_ROLLUP_TYPE_COLLECTIVE
+        );
     }
 
     protected void setMetricPrefix() {
@@ -344,4 +471,6 @@ public class DockerMonitor extends AManagedMonitor {
     public static String getImplementationVersion() {
         return DockerMonitor.class.getPackage().getImplementationTitle();
     }
+
+
 }

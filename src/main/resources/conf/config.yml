@@ -11,6 +11,7 @@ metricPrefix: Custom Metrics|Docker
 # Or the current user needs password-less sudo access
 unixSocket:
     commandFile: monitors/DockerMonitor/socket-command.sh
+    name: TcpSocket
 
 # If the Docker is listening to the TCP port, use this.
 # The advantage is same machine agent can query multiple docker instances
@@ -18,7 +19,8 @@ unixSocket:
 #    - baseUrl: http://192.168.1.134:2375
 #      name: Server1
 
-#    - baseUrl: http://192.168.1.134:2375
+#Can have multiple TCP Sockets
+#    - baseUrl: http://192.168.1.135:2375
 
 
 # List of metrics that needs to be fetched
@@ -66,3 +68,21 @@ metrics:
                     - usage_in_usermode: CPU|User Mode (Ticks)
                     - total_usage: CPU|Total (Ticks)
                     - usage_in_kernelmode: CPU|Kernel (Ticks)
+
+perMinuteMetricSuffixes:
+    - "Network|Receive|MB"
+    - "Network|Transmit|MB"
+    - "Network|Receive|Errors"
+    - "Network|Transmit|Errors"
+
+# Generate a custom dashboard based on the provided template
+customDashboard:
+    enabled: true
+    namePrefix: Docker Monitor
+    uploadDashboard: true
+    executionFrequencyMinutes: 5
+#    templateFile: monitors/DockerMonitor/template.xml # If not set the default will be used
+
+# Uncomment the applicationName and tierName if they are not set in the controller-info.xml or in the startup system properties
+#    applicationName: AppName
+#    tierName: tierName

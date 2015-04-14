@@ -151,6 +151,7 @@ public class DockerMonitorTest {
         map.put(prefix + "|/rabbitmq_rabbit3_1|Network|Transmit|Packets", "120");
         map.put(prefix + "|/rabbitmq_rabbit3_1|Memory|Max Usage (MB)", "48");
         map.put(prefix + "|/rabbitmq_rabbit3_1|Memory|Current (MB)", "10");
+        map.put(prefix + "|/rabbitmq_rabbit3_1|Memory|Current %", "0");
         map.put(prefix + "|/rabbitmq_rabbit3_1|Memory|Limit (MB)", "3953");
         map.put(prefix + "|/rabbitmq_rabbit3_1|Memory|Fail Count", "0");
         map.put(prefix + "|/rabbitmq_rabbit3_1|CPU|System (Ticks)", "10");
@@ -168,7 +169,8 @@ public class DockerMonitorTest {
         map.put(prefix + "|/rabbitmq_rabbit2_1|Network|Transmit|Errors", "25");
         map.put(prefix + "|/rabbitmq_rabbit2_1|Network|Transmit|Packets", "275");
         map.put(prefix + "|/rabbitmq_rabbit2_1|Memory|Max Usage (MB)", "43");
-        map.put(prefix + "|/rabbitmq_rabbit2_1|Memory|Current (MB)", "19");
+        map.put(prefix + "|/rabbitmq_rabbit2_1|Memory|Current (MB)", "395");
+        map.put(prefix + "|/rabbitmq_rabbit2_1|Memory|Current %", "10");
         map.put(prefix + "|/rabbitmq_rabbit2_1|Memory|Limit (MB)", "3953");
         map.put(prefix + "|/rabbitmq_rabbit2_1|Memory|Fail Count", "0");
         map.put(prefix + "|/rabbitmq_rabbit2_1|CPU|System (Ticks)", "12");
@@ -180,6 +182,7 @@ public class DockerMonitorTest {
         map.put(prefix + "|Summary|Total Memory (MB)", "3953");
         map.put(prefix + "|Summary|MemoryLimit", "1");
         map.put(prefix + "|Summary|SwapLimit", "0");
+        map.put(prefix + "|Summary|Running Container Count", "2");
         map.put(prefix + "|Summary|Running Container Count", "2");
         return map;
     }
