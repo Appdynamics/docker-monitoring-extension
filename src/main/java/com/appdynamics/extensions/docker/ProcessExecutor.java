@@ -138,7 +138,7 @@ public class ProcessExecutor {
                     logger.error("Process Error - {}", temp);
                 }
             } catch (IOException e) {
-                logger.error("Error while reading the contents of the stream", e);
+                logger.debug("Error while reading the contents of the the error stream", e);
             } finally {
                 try {
                     reader.close();
