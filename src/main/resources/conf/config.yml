@@ -11,7 +11,7 @@ metricPrefix: Custom Metrics|Docker
 # Or the current user needs password-less sudo access
 unixSocket:
     commandFile: monitors/DockerMonitor/socket-command.sh
-    name: TcpSocket
+    name: UnixSocket
 
 # If the Docker is listening to the TCP port, use this.
 # The advantage is same machine agent can query multiple docker instances
@@ -80,6 +80,7 @@ customDashboard:
     enabled: true
     namePrefix: Docker Monitor
     uploadDashboard: true
+    overwriteDashboard: false
     executionFrequencyMinutes: 5
 #    templateFile: monitors/DockerMonitor/template.xml # If not set the default will be used
 

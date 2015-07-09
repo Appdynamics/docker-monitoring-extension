@@ -17,7 +17,7 @@
     <canvas type="CANVAS_TYPE_GRID">
         <widget widget-ordinal="2" widget-type="metric-label">
             <widget-display-properties height="1" width="6" x-axis="3" y-axis="0">
-                <label>Total Containers  - ${v}</label>
+                <label>Total Containers - ${v}</label>
                 <description/>
                 <drill-down-url/>
                 <use-metric-browser-as-drill-down>true</use-metric-browser-as-drill-down>
