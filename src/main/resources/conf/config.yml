@@ -82,8 +82,10 @@ customDashboard:
     uploadDashboard: true
     overwriteDashboard: false
     executionFrequencyMinutes: 5
+    username: controllerUser
+    passwordEncrypted: C043Fag+LKEZM0AQTWPy2g==
+    encryptionKey: welcome
 #    templateFile: monitors/DockerMonitor/template.xml # If not set the default will be used
-
 # Uncomment the applicationName and tierName if they are not set in the controller-info.xml or in the startup system properties
 #    applicationName: AppName
 #    tierName: tierName
