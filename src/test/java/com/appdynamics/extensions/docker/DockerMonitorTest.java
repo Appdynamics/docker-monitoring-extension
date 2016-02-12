@@ -62,7 +62,7 @@ public class DockerMonitorTest {
         config.put("metricPrefix", "Test2|Docker2||||");
         //The file doesnt exit case
         config.put("unixSocket", Collections.singletonMap("commandFile", "file.sh"));
-
+        config.remove("tcpSockets");
         DockerMonitor monitor = createMonitor(config, Collections.<String, String>emptyMap());
         monitor.execute(Collections.<String, String>emptyMap(), null);
     }
@@ -70,6 +70,7 @@ public class DockerMonitorTest {
     @Test
     public void unixSocketsWithServerNameTest() throws TaskExecutionException, IOException {
         Map config = loadYaml();
+        config.remove("tcpSockets");
         config.put("metricPrefix", "Test2|Docker2||||");
         File file = new File(System.getProperty("java.io.tmpdir"), "docketmonitor.file");
         if (!file.exists()) {
@@ -89,6 +90,7 @@ public class DockerMonitorTest {
     @Test
     public void unixSocketTest() throws TaskExecutionException, IOException {
         Map config = loadYaml();
+        config.remove("tcpSockets");
         config.put("metricPrefix", "Test2|Docker2||||");
         File file = new File(System.getProperty("java.io.tmpdir"), "docketmonitor.file");
         if (!file.exists()) {
@@ -111,8 +113,8 @@ public class DockerMonitorTest {
                 Object[] args = invocation.getArguments();
                 String key = (String) args[0];
                 if (expectedValueMap.containsKey(key)) {
-                    Assert.assertEquals(expectedValueMap.get(key), args[1]);
                     logger.debug("Metric is {} value is {}", key, args[1]);
+                    Assert.assertEquals(expectedValueMap.get(key), args[1]);
                     expectedValueMap.remove(key);
                 } else {
                     Assert.fail("The metric " + key + " is Unexpected");
@@ -139,51 +141,77 @@ public class DockerMonitorTest {
 
     private Map<String, String> getExpectedValueMap(String prefix) {
         Map<String, String> map = new HashMap<String, String>();
-        map.put(prefix + "|/rabbitmq_rabbit3_1|SizeRw", null);
-        map.put(prefix + "|/rabbitmq_rabbit3_1|SizeRootFs", null);
-        map.put(prefix + "|/rabbitmq_rabbit3_1|Network|Receive|Dropped", "11");
-        map.put(prefix + "|/rabbitmq_rabbit3_1|Network|Receive|MB", "954");
-        map.put(prefix + "|/rabbitmq_rabbit3_1|Network|Receive|Errors", "10");
-        map.put(prefix + "|/rabbitmq_rabbit3_1|Network|Receive|Packets", "110");
-        map.put(prefix + "|/rabbitmq_rabbit3_1|Network|Transmit|Dropped", "16");
-        map.put(prefix + "|/rabbitmq_rabbit3_1|Network|Transmit|MB", "1049");
-        map.put(prefix + "|/rabbitmq_rabbit3_1|Network|Transmit|Errors", "15");
-        map.put(prefix + "|/rabbitmq_rabbit3_1|Network|Transmit|Packets", "120");
-        map.put(prefix + "|/rabbitmq_rabbit3_1|Memory|Max Usage (MB)", "48");
-        map.put(prefix + "|/rabbitmq_rabbit3_1|Memory|Current (MB)", "10");
-        map.put(prefix + "|/rabbitmq_rabbit3_1|Memory|Current %", "0");
-        map.put(prefix + "|/rabbitmq_rabbit3_1|Memory|Limit (MB)", "3953");
-        map.put(prefix + "|/rabbitmq_rabbit3_1|Memory|Fail Count", "0");
-        map.put(prefix + "|/rabbitmq_rabbit3_1|CPU|System (Ticks)", "10");
-        map.put(prefix + "|/rabbitmq_rabbit3_1|CPU|User Mode (Ticks)", "5");
-        map.put(prefix + "|/rabbitmq_rabbit3_1|CPU|Total (Ticks)", "20");
-        map.put(prefix + "|/rabbitmq_rabbit3_1|CPU|Kernel (Ticks)", "5");
-        map.put(prefix + "|/rabbitmq_rabbit2_1|SizeRw", null);
-        map.put(prefix + "|/rabbitmq_rabbit2_1|SizeRootFs", null);
-        map.put(prefix + "|/rabbitmq_rabbit2_1|Network|Receive|Dropped", "21");
-        map.put(prefix + "|/rabbitmq_rabbit2_1|Network|Receive|MB", "20");
-        map.put(prefix + "|/rabbitmq_rabbit2_1|Network|Receive|Errors", "20");
-        map.put(prefix + "|/rabbitmq_rabbit2_1|Network|Receive|Packets", "250");
-        map.put(prefix + "|/rabbitmq_rabbit2_1|Network|Transmit|Dropped", "27");
-        map.put(prefix + "|/rabbitmq_rabbit2_1|Network|Transmit|MB", "19");
-        map.put(prefix + "|/rabbitmq_rabbit2_1|Network|Transmit|Errors", "25");
-        map.put(prefix + "|/rabbitmq_rabbit2_1|Network|Transmit|Packets", "275");
-        map.put(prefix + "|/rabbitmq_rabbit2_1|Memory|Max Usage (MB)", "43");
-        map.put(prefix + "|/rabbitmq_rabbit2_1|Memory|Current (MB)", "395");
-        map.put(prefix + "|/rabbitmq_rabbit2_1|Memory|Current %", "10");
-        map.put(prefix + "|/rabbitmq_rabbit2_1|Memory|Limit (MB)", "3953");
-        map.put(prefix + "|/rabbitmq_rabbit2_1|Memory|Fail Count", "0");
-        map.put(prefix + "|/rabbitmq_rabbit2_1|CPU|System (Ticks)", "12");
-        map.put(prefix + "|/rabbitmq_rabbit2_1|CPU|User Mode (Ticks)", "7");
-        map.put(prefix + "|/rabbitmq_rabbit2_1|CPU|Total (Ticks)", "10");
-        map.put(prefix + "|/rabbitmq_rabbit2_1|CPU|Kernel (Ticks)", "6");
+        map.put(prefix + "|/rabbit1|SizeRw", null);
+        map.put(prefix + "|/rabbit1|SizeRootFs", null);
+        map.put(prefix + "|/rabbit1|Networks|all|Receive|Dropped", "11");
+        map.put(prefix + "|/rabbit1|Networks|all|Receive|MB", "954");
+        map.put(prefix + "|/rabbit1|Networks|all|Receive|Errors", "10");
+        map.put(prefix + "|/rabbit1|Networks|all|Receive|Packets", "110");
+        map.put(prefix + "|/rabbit1|Networks|all|Transmit|Dropped", "16");
+        map.put(prefix + "|/rabbit1|Networks|all|Transmit|MB", "1049");
+        map.put(prefix + "|/rabbit1|Networks|all|Transmit|Errors", "15");
+        map.put(prefix + "|/rabbit1|Networks|all|Transmit|Packets", "120");
+        map.put(prefix + "|/rabbit1|Memory|Max Usage (MB)", "48");
+        map.put(prefix + "|/rabbit1|Memory|Current (MB)", "10");
+        map.put(prefix + "|/rabbit1|Memory|Current %", "0");
+        map.put(prefix + "|/rabbit1|Memory|Limit (MB)", "3953");
+        map.put(prefix + "|/rabbit1|Memory|Fail Count", "0");
+        map.put(prefix + "|/rabbit1|CPU|System (Ticks)", "10");
+        map.put(prefix + "|/rabbit1|CPU|User Mode (Ticks)", "5");
+        map.put(prefix + "|/rabbit1|CPU|Total (Ticks)", "20");
+        map.put(prefix + "|/rabbit1|CPU|Kernel (Ticks)", "5");
+        map.put(prefix + "|/rabbit2|SizeRw", null);
+        map.put(prefix + "|/rabbit2|SizeRootFs", null);
+        map.put(prefix + "|/rabbit2|Networks|all|Receive|Dropped", "21");
+        map.put(prefix + "|/rabbit2|Networks|all|Receive|MB", "20");
+        map.put(prefix + "|/rabbit2|Networks|all|Receive|Errors", "20");
+        map.put(prefix + "|/rabbit2|Networks|all|Receive|Packets", "250");
+        map.put(prefix + "|/rabbit2|Networks|all|Transmit|Dropped", "27");
+        map.put(prefix + "|/rabbit2|Networks|all|Transmit|MB", "19");
+        map.put(prefix + "|/rabbit2|Networks|all|Transmit|Errors", "25");
+        map.put(prefix + "|/rabbit2|Networks|all|Transmit|Packets", "275");
+        map.put(prefix + "|/rabbit2|Memory|Max Usage (MB)", "43");
+        map.put(prefix + "|/rabbit2|Memory|Current (MB)", "395");
+        map.put(prefix + "|/rabbit2|Memory|Current %", "10");
+        map.put(prefix + "|/rabbit2|Memory|Limit (MB)", "3953");
+        map.put(prefix + "|/rabbit2|Memory|Fail Count", "0");
+        map.put(prefix + "|/rabbit2|CPU|System (Ticks)", "12");
+        map.put(prefix + "|/rabbit2|CPU|User Mode (Ticks)", "7");
+        map.put(prefix + "|/rabbit2|CPU|Total (Ticks)", "10");
+        map.put(prefix + "|/rabbit2|CPU|Kernel (Ticks)", "6");
+        map.put(prefix + "|/rabbit3|SizeRw", null);
+        map.put(prefix + "|/rabbit3|SizeRootFs", null);
+        map.put(prefix + "|/rabbit3|Networks|eth0|Receive|Dropped", "22");
+        map.put(prefix + "|/rabbit3|Networks|eth0|Receive|MB", "20");
+        map.put(prefix + "|/rabbit3|Networks|eth0|Receive|Errors", "20");
+        map.put(prefix + "|/rabbit3|Networks|eth0|Receive|Packets", "250");
+        map.put(prefix + "|/rabbit3|Networks|eth0|Transmit|Dropped", "27");
+        map.put(prefix + "|/rabbit3|Networks|eth0|Transmit|MB", "22");
+        map.put(prefix + "|/rabbit3|Networks|eth0|Transmit|Errors", "25");
+        map.put(prefix + "|/rabbit3|Networks|eth0|Transmit|Packets", "275");
+        map.put(prefix + "|/rabbit3|Networks|eth1|Receive|Dropped", "27");
+        map.put(prefix + "|/rabbit3|Networks|eth1|Receive|MB", "20");
+        map.put(prefix + "|/rabbit3|Networks|eth1|Receive|Errors", "20");
+        map.put(prefix + "|/rabbit3|Networks|eth1|Receive|Packets", "250");
+        map.put(prefix + "|/rabbit3|Networks|eth1|Transmit|Dropped", "27");
+        map.put(prefix + "|/rabbit3|Networks|eth1|Transmit|MB", "27");
+        map.put(prefix + "|/rabbit3|Networks|eth1|Transmit|Errors", "25");
+        map.put(prefix + "|/rabbit3|Networks|eth1|Transmit|Packets", "275");
+        map.put(prefix + "|/rabbit3|Memory|Max Usage (MB)", "610");
+        map.put(prefix + "|/rabbit3|Memory|Current (MB)", "597");
+        map.put(prefix + "|/rabbit3|Memory|Current %", "4");
+        map.put(prefix + "|/rabbit3|Memory|Limit (MB)", "15040");
+        map.put(prefix + "|/rabbit3|Memory|Fail Count", "0");
+        map.put(prefix + "|/rabbit3|CPU|System (Ticks)", "41047820000000");
+        map.put(prefix + "|/rabbit3|CPU|User Mode (Ticks)", "41280000000");
+        map.put(prefix + "|/rabbit3|CPU|Total (Ticks)", "44314766639");
+        map.put(prefix + "|/rabbit3|CPU|Kernel (Ticks)", "3320000000");
         map.put(prefix + "|Summary|Container Count", "4");
         map.put(prefix + "|Summary|Image Count", "26");
         map.put(prefix + "|Summary|Total Memory (MB)", "3953");
         map.put(prefix + "|Summary|MemoryLimit", "1");
         map.put(prefix + "|Summary|SwapLimit", "0");
-        map.put(prefix + "|Summary|Running Container Count", "2");
-        map.put(prefix + "|Summary|Running Container Count", "2");
+        map.put(prefix + "|Summary|Running Container Count", "3");
         return map;
     }
 
@@ -200,6 +228,8 @@ public class DockerMonitorTest {
                     return loadJson("/json/container-stats_1.json", JsonNode.class);
                 } else if (path.contains("2/stats")) {
                     return loadJson("/json/container-stats_2.json", JsonNode.class);
+                } else if (path.contains("3/stats")) {
+                    return loadJson("/json/container-stats_3.json", JsonNode.class);
                 }
 
                 return null;
@@ -216,6 +246,5 @@ public class DockerMonitorTest {
         Yaml yaml = new Yaml();
         return (Map) yaml.load(getClass().getResourceAsStream("/conf/config.yml"));
     }
-
 
 }

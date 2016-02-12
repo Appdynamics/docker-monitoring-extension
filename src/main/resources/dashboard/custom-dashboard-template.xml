@@ -169,7 +169,7 @@
                         <leaf-metric-expression display-name="null" is-literal-value="false">
                             <function-type>VALUE</function-type>
                             <metric-definition type="ABSOLUTE_METRIC_SCOPE">
-                                <metric-name>${METRIC_PREFIX}|${INSTANCE_NAME}|${ITEM}|Network|Receive|MB Per Minute</metric-name>
+                                <metric-name>${METRIC_PREFIX}|${INSTANCE_NAME}|${ITEM0}|Networks|${ITEM1}|Receive|MB Per Minute</metric-name>
                             </metric-definition>
                         </leaf-metric-expression>
                         <roll-up>false</roll-up>
@@ -361,7 +361,7 @@
                         <leaf-metric-expression display-name="null" is-literal-value="false">
                             <function-type>VALUE</function-type>
                             <metric-definition type="ABSOLUTE_METRIC_SCOPE">
-                                <metric-name>${METRIC_PREFIX}|${INSTANCE_NAME}|${ITEM}|Network|Transmit|MB Per Minute</metric-name>
+                                <metric-name>${METRIC_PREFIX}|${INSTANCE_NAME}|${ITEM0}|Networks|${ITEM1}|Transmit|MB Per Minute</metric-name>
                             </metric-definition>
                         </leaf-metric-expression>
                         <roll-up>false</roll-up>
@@ -512,7 +512,7 @@
                         <leaf-metric-expression display-name="null" is-literal-value="false">
                             <function-type>VALUE</function-type>
                             <metric-definition type="ABSOLUTE_METRIC_SCOPE">
-                                <metric-name>${METRIC_PREFIX}|${INSTANCE_NAME}|${ITEM}|Network|Receive|Errors Per Minute</metric-name>
+                                <metric-name>${METRIC_PREFIX}|${INSTANCE_NAME}|${ITEM0}|Networks|${ITEM1}|Receive|Errors Per Minute</metric-name>
                             </metric-definition>
                         </leaf-metric-expression>
                         <roll-up>false</roll-up>
@@ -576,7 +576,7 @@
                         <leaf-metric-expression display-name="null" is-literal-value="false">
                             <function-type>VALUE</function-type>
                             <metric-definition type="ABSOLUTE_METRIC_SCOPE">
-                                <metric-name>${METRIC_PREFIX}|${INSTANCE_NAME}|${ITEM}|Network|Transmit|Errors Per Minute</metric-name>
+                                <metric-name>${METRIC_PREFIX}|${INSTANCE_NAME}|${ITEM0}|Networks|${ITEM1}|Transmit|Errors Per Minute</metric-name>
                             </metric-definition>
                         </leaf-metric-expression>
                         <roll-up>false</roll-up>

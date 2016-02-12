@@ -17,6 +17,7 @@ import com.singularity.ee.agent.systemagent.api.exception.TaskExecutionException
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.node.ArrayNode;
 import org.codehaus.jackson.node.BooleanNode;
+import org.codehaus.jackson.node.ObjectNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.Yaml;
@@ -87,31 +88,31 @@ public class DockerMonitor extends AManagedMonitor {
         config = readYml(file);
         perMinuteMetricSuffixes = (List<String>) config.get("perMinuteMetricSuffixes");
         setMetricPrefix();
-        if(config!=null){
+        if (config != null) {
             Set<String> instanceNames = getInstanceNames();
-            dashboardTask.updateConfig(instanceNames,metricPrefix, (Map) config.get("customDashboard"));
+            dashboardTask.updateConfig(instanceNames, metricPrefix, (Map) config.get("customDashboard"));
         }
     }
 
     private Set<String> getInstanceNames() {
         Map unixSocket = (Map) config.get("unixSocket");
         Set<String> names = new HashSet<String>();
-        if(unixSocket!=null){
+        if (unixSocket != null) {
             String name = (String) unixSocket.get("name");
-            if(name!=null){
+            if (name != null) {
                 names.add(name);
-            } else{
+            } else {
                 names.add("");
             }
         }
 
         List<Map> tcpSockets = (List) config.get("tcpSockets");
-        if(tcpSockets!=null){
+        if (tcpSockets != null) {
             for (Map tcpSocket : tcpSockets) {
                 String name = (String) tcpSocket.get("name");
-                if(name!=null){
+                if (name != null) {
                     names.add(name);
-                } else{
+                } else {
                     names.add("");
                 }
             }
@@ -297,7 +298,7 @@ public class DockerMonitor extends AManagedMonitor {
         return serverName;
     }
 
-    private void printMetrics(JsonNode node, List metricConfigs, String metricPrefix) {
+    protected void printMetrics(JsonNode node, List metricConfigs, String metricPrefix) {
         if (metricConfigs != null && node != null) {
             for (Object o : metricConfigs) {
                 Map metric = (Map) o;
@@ -310,11 +311,25 @@ public class DockerMonitor extends AManagedMonitor {
                     Double multiplier = (Double) metric.get("multiplier");
                     String valueStr = multiply(value, multiplier);
                     String metricPath = appendMetricPath(metricPrefix, confPropValue.toString());
+                    if(metricPath.contains("$$name")){
+                        metricPath = metricPath.replace("$$name",getStringValue("$$name",node));
+                    }
                     printCollectiveObservedCurrent(metricPath, valueStr);
                 } else if (confPropValue instanceof List) {
                     List subMetricConfigs = (List) confPropValue;
-                    JsonNode subNode = node.get(confPropName);
-                    printMetrics(subNode, subMetricConfigs, metricPrefix);
+                    if ("$$name".equals(confPropName)) {
+                        Iterator<Map.Entry<String, JsonNode>> fields = node.getFields();
+                        while (fields.hasNext()) {
+                            Map.Entry<String, JsonNode> field = fields.next();
+                            String name = field.getKey();
+                            ObjectNode subNode = (ObjectNode) field.getValue();
+                            subNode.put(confPropName, name);
+                            printMetrics(subNode, subMetricConfigs, metricPrefix);
+                        }
+                    } else {
+                        JsonNode subNode = node.get(confPropName);
+                        printMetrics(subNode, subMetricConfigs, metricPrefix);
+                    }
                 }
             }
         } else {
@@ -354,7 +369,7 @@ public class DockerMonitor extends AManagedMonitor {
         return null;
     }
 
-    private List getMetricConf(String name) {
+    protected List getMetricConf(String name) {
         Map metricsRoot = (Map) config.get("metrics");
         Object conf = metricsRoot.get(name);
         if (conf != null) {
