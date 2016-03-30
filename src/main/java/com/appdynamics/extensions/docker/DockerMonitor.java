@@ -3,10 +3,12 @@ package com.appdynamics.extensions.docker;
 import com.appdynamics.TaskInputArgs;
 import com.appdynamics.extensions.PathResolver;
 import com.appdynamics.extensions.StringUtils;
+import com.appdynamics.extensions.conf.MonitorConfiguration;
+import com.appdynamics.extensions.conf.MonitorConfiguration.ConfItem;
 import com.appdynamics.extensions.dashboard.CustomDashboardTask;
 import com.appdynamics.extensions.http.SimpleHttpClient;
 import com.appdynamics.extensions.http.SimpleHttpClientBuilder;
-import com.appdynamics.extensions.util.FileWatcher;
+import com.appdynamics.extensions.util.MetricWriteHelperFactory;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.singularity.ee.agent.systemagent.api.AManagedMonitor;
@@ -39,15 +41,11 @@ public class DockerMonitor extends AManagedMonitor {
     public static final String METRIC_PREFIX = "Custom Metrics|Docker|";
     public static final BigDecimal BIG_DECIMAL_100 = new BigDecimal("100");
 
-    protected boolean initialized;
-    protected Map config;
-    private String metricPrefix;
-
     private Cache<String, BigInteger> previousMetricsMap;
     private Cache<String, String> metricMap;
 
-    private List<String> perMinuteMetricSuffixes;
     private CustomDashboardTask dashboardTask;
+    protected MonitorConfiguration configuration;
 
     public DockerMonitor() {
         String msg = "Using Monitor Version [" + getImplementationVersion() + "]";
@@ -63,38 +61,30 @@ public class DockerMonitor extends AManagedMonitor {
     }
 
     protected void initialize(Map<String, String> argsMap) {
-        if (!initialized) {
-            final File file = PathResolver.getFile(argsMap.get("config-file"), AManagedMonitor.class);
-            if (file != null && file.exists()) {
-                reloadConfig(file);
-                initialized = true;
-            } else {
-                logger.error("Config file is not found.The config file path {} is resolved to {}",
-                        argsMap.get("config-file"), file != null ? file.getAbsolutePath() : null);
-            }
-            if (file != null) {
-                //Create a File watcher to auto reload the config
-                FileWatcher.watch(file, new FileWatcher.FileChangeListener() {
-                    public void fileChanged() {
-                        logger.info("The file " + file.getAbsolutePath() + " has changed, reloading the config");
-                        reloadConfig(file);
-                    }
-                });
-            }
+        if (configuration == null) {
+            MonitorConfiguration conf = new MonitorConfiguration(METRIC_PREFIX);
+            conf.setConfigYml(argsMap.get("config-file"), new MonitorConfiguration.FileWatchListener() {
+                public void onFileChange(File file) {
+                    postConfigReload();
+                }
+            });
+            conf.setMetricWriter(MetricWriteHelperFactory.create(this));
+            conf.checkIfInitialized(ConfItem.METRIC_PREFIX, ConfItem.METRIC_WRITE_HELPER, ConfItem.CONFIG_YML);
+            this.configuration = conf;
+            postConfigReload();
         }
     }
 
-    private void reloadConfig(File file) {
-        config = readYml(file);
-        perMinuteMetricSuffixes = (List<String>) config.get("perMinuteMetricSuffixes");
-        setMetricPrefix();
-        if (config != null) {
-            Set<String> instanceNames = getInstanceNames();
+    private void postConfigReload() {
+        if (configuration != null && configuration.getConfigYml() != null) {
+            Map<String, ?> config = configuration.getConfigYml();
+            Set<String> instanceNames = getInstanceNames(config);
+            String metricPrefix = configuration.getMetricPrefix();
             dashboardTask.updateConfig(instanceNames, metricPrefix, (Map) config.get("customDashboard"));
         }
     }
 
-    private Set<String> getInstanceNames() {
+    private static Set<String> getInstanceNames(Map<String, ?> config) {
         Map unixSocket = (Map) config.get("unixSocket");
         Set<String> names = new HashSet<String>();
         if (unixSocket != null) {
@@ -133,7 +123,8 @@ public class DockerMonitor extends AManagedMonitor {
 
     public TaskOutput execute(Map<String, String> argsMap, TaskExecutionContext taskExecutionContext) throws TaskExecutionException {
         initialize(argsMap);
-        if (initialized) {
+        if (configuration != null && configuration.getConfigYml() != null) {
+            Map<String, ?> config = configuration.getConfigYml();
             if (config != null) {
                 //Check if the UNIX Socket is configured
                 if (config.get("unixSocket") != null) {
@@ -161,6 +152,7 @@ public class DockerMonitor extends AManagedMonitor {
 
     private void getDataFromUnixSocket() {
         try {
+            Map<String, ?> config = configuration.getConfigYml();
             Map unixSocket = (Map) config.get("unixSocket");
             String commandFile = (String) unixSocket.get("commandFile");
             if (StringUtils.hasText(commandFile)) {
@@ -262,6 +254,7 @@ public class DockerMonitor extends AManagedMonitor {
     }
 
     protected void getDataFromTcpSockets() {
+        Map<String, ?> config = configuration.getConfigYml();
         List tcpSockets = (List) config.get("tcpSockets");
         for (Object tcpSocket : tcpSockets) {
             try {
@@ -311,8 +304,8 @@ public class DockerMonitor extends AManagedMonitor {
                     Double multiplier = (Double) metric.get("multiplier");
                     String valueStr = multiply(value, multiplier);
                     String metricPath = appendMetricPath(metricPrefix, confPropValue.toString());
-                    if(metricPath.contains("$$name")){
-                        metricPath = metricPath.replace("$$name",getStringValue("$$name",node));
+                    if (metricPath.contains("$$name")) {
+                        metricPath = metricPath.replace("$$name", getStringValue("$$name", node));
                     }
                     printCollectiveObservedCurrent(metricPath, valueStr);
                 } else if (confPropValue instanceof List) {
@@ -370,6 +363,7 @@ public class DockerMonitor extends AManagedMonitor {
     }
 
     protected List getMetricConf(String name) {
+        Map<String, ?> config = configuration.getConfigYml();
         Map metricsRoot = (Map) config.get("metrics");
         Object conf = metricsRoot.get(name);
         if (conf != null) {
@@ -421,13 +415,8 @@ public class DockerMonitor extends AManagedMonitor {
         return null;
     }
 
-    public void printMetric(String metricName, String metricValue, String aggregation, String timeRollup, String cluster) {
+    public void printMetric(String metricName, String metricValue, String aggregationType, String timeRollup, String clusterRollup) {
         metricMap.put(metricName, "");
-        MetricWriter metricWriter = getMetricWriter(metricName,
-                aggregation,
-                timeRollup,
-                cluster
-        );
         String value;
         if (metricValue != null) {
             value = metricValue;
@@ -435,18 +424,21 @@ public class DockerMonitor extends AManagedMonitor {
             value = "0";
         }
         if (logger.isDebugEnabled()) {
-            logger.debug("Sending [" + aggregation + "/" + timeRollup + "/" + cluster
+            logger.debug("Sending [" + aggregationType + "/" + timeRollup + "/" + clusterRollup
                     + "] metric = " + metricName + " = " + value);
         }
-        metricWriter.printMetric(value);
+        configuration.getMetricWriter()
+                .printMetric(metricName, metricValue, aggregationType, timeRollup, clusterRollup);
     }
 
     protected void printCollectiveObservedCurrent(String metricName, String metricValue) {
-        printMetric(metricPrefix + metricName, metricValue,
+        String metricPrefix = configuration.getMetricPrefix();
+        printMetric(metricPrefix + "|" + metricName, metricValue,
                 MetricWriter.METRIC_AGGREGATION_TYPE_OBSERVATION,
                 MetricWriter.METRIC_TIME_ROLLUP_TYPE_CURRENT,
                 MetricWriter.METRIC_CLUSTER_ROLLUP_TYPE_COLLECTIVE
         );
+        List<String> perMinuteMetricSuffixes = (List<String>) configuration.getConfigYml().get("perMinuteMetricSuffixes");
         if (StringUtils.hasText(metricValue) && perMinuteMetricSuffixes != null) {
             for (String suffix : perMinuteMetricSuffixes) {
                 if (metricName.endsWith(suffix)) {
@@ -462,25 +454,12 @@ public class DockerMonitor extends AManagedMonitor {
     }
 
     protected void printCollectiveObservedAverage(String metricName, String metricValue) {
-        printMetric(metricPrefix + metricName, metricValue,
+        String metricPrefix = configuration.getMetricPrefix();
+        printMetric(metricPrefix + "|" + metricName, metricValue,
                 MetricWriter.METRIC_AGGREGATION_TYPE_OBSERVATION,
                 MetricWriter.METRIC_TIME_ROLLUP_TYPE_AVERAGE,
                 MetricWriter.METRIC_CLUSTER_ROLLUP_TYPE_COLLECTIVE
         );
-    }
-
-    protected void setMetricPrefix() {
-        if (config != null) {
-            String prefix = (String) config.get("metricPrefix");
-            logger.debug("The metric prefix from the config file is {}", prefix);
-            if (StringUtils.hasText(prefix)) {
-                prefix = StringUtils.trim(prefix, "|");
-                metricPrefix = prefix + "|";
-            } else {
-                metricPrefix = METRIC_PREFIX;
-            }
-            logger.info("The metric prefix is initialized as {}", metricPrefix);
-        }
     }
 
     public static String getImplementationVersion() {

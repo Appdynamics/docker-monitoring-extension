@@ -97,15 +97,15 @@ customDashboard:
     executionFrequencyMinutes: 5
     # To upload the dashboard, please create a user from Controller UI or
     # add the credentials of an existing user.
-    username: ControllerUI_user
-    password: PlainTextPassword
-    #passwordEncrypted: ControllerUI_password_encrypted
-    #encryptionKey: welcome
+    username: "ControllerUI_user"
+    password: "PlainTextPassword"
+    #passwordEncrypted: "ControllerUI_password_encrypted"
+    #encryptionKey: "welcome"
 
     # If the AppName and TierName controller-info.xml or in the startup system properties,
     # Add them here
-    applicationName: AppName
-    tierName: tierName
+    applicationName: "AppName"
+    tierName: "tierName"
 
     # Custom Template for Dashboard
     # If not set, the default will be used

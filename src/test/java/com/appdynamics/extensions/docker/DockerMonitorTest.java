@@ -1,5 +1,6 @@
 package com.appdynamics.extensions.docker;
 
+import com.appdynamics.extensions.conf.MonitorConfiguration;
 import com.appdynamics.extensions.http.SimpleHttpClient;
 import com.singularity.ee.agent.systemagent.api.exception.TaskExecutionException;
 import org.codehaus.jackson.JsonNode;
@@ -106,7 +107,6 @@ public class DockerMonitorTest {
 
     private DockerMonitor createMonitor(Map config, final Map<String, String> expectedValueMap) {
         DockerMonitor monitor = Mockito.spy(new DockerMonitor());
-        monitor.initialized = true;
 
         Mockito.doAnswer(new Answer() {
             public Object answer(InvocationOnMock invocation) throws Throwable {
@@ -133,9 +133,10 @@ public class DockerMonitorTest {
 
         Mockito.doReturn(Mockito.mock(SimpleHttpClient.class))
                 .when(monitor).buildSimpleHttpClient(Mockito.anyMap());
-
-        monitor.config = config;
-        monitor.setMetricPrefix();
+        MonitorConfiguration mc = new MonitorConfiguration((String) config.get("metricPrefix"));
+        mc = Mockito.spy(mc);
+        Mockito.doReturn(config).when(mc).getConfigYml();
+        monitor.configuration = mc;
         return monitor;
     }
 
