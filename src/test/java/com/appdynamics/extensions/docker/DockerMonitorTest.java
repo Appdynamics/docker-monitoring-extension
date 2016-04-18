@@ -2,6 +2,7 @@ package com.appdynamics.extensions.docker;
 
 import com.appdynamics.extensions.conf.MonitorConfiguration;
 import com.appdynamics.extensions.http.SimpleHttpClient;
+import com.appdynamics.extensions.util.MetricWriteHelper;
 import com.singularity.ee.agent.systemagent.api.exception.TaskExecutionException;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -133,7 +134,9 @@ public class DockerMonitorTest {
 
         Mockito.doReturn(Mockito.mock(SimpleHttpClient.class))
                 .when(monitor).buildSimpleHttpClient(Mockito.anyMap());
-        MonitorConfiguration mc = new MonitorConfiguration((String) config.get("metricPrefix"));
+        MetricWriteHelper writer = Mockito.mock(MetricWriteHelper.class);
+        DockerMonitor.TaskRunner taskRunner = monitor.new TaskRunner();
+        MonitorConfiguration mc = new MonitorConfiguration((String) config.get("metricPrefix"),taskRunner,writer);
         mc = Mockito.spy(mc);
         Mockito.doReturn(config).when(mc).getConfigYml();
         monitor.configuration = mc;

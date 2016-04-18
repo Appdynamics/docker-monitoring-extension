@@ -8,6 +8,7 @@ import com.appdynamics.extensions.conf.MonitorConfiguration.ConfItem;
 import com.appdynamics.extensions.dashboard.CustomDashboardTask;
 import com.appdynamics.extensions.http.SimpleHttpClient;
 import com.appdynamics.extensions.http.SimpleHttpClientBuilder;
+import com.appdynamics.extensions.util.MetricWriteHelper;
 import com.appdynamics.extensions.util.MetricWriteHelperFactory;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -62,13 +63,14 @@ public class DockerMonitor extends AManagedMonitor {
 
     protected void initialize(Map<String, String> argsMap) {
         if (configuration == null) {
-            MonitorConfiguration conf = new MonitorConfiguration(METRIC_PREFIX);
+            logger.debug("The task arguments are {}", argsMap);
+            MetricWriteHelper metricWriter = MetricWriteHelperFactory.create(this);
+            MonitorConfiguration conf = new MonitorConfiguration(METRIC_PREFIX, new TaskRunner(), metricWriter);
             conf.setConfigYml(argsMap.get("config-file"), new MonitorConfiguration.FileWatchListener() {
                 public void onFileChange(File file) {
                     postConfigReload();
                 }
             });
-            conf.setMetricWriter(MetricWriteHelperFactory.create(this));
             conf.checkIfInitialized(ConfItem.METRIC_PREFIX, ConfItem.METRIC_WRITE_HELPER, ConfItem.CONFIG_YML);
             this.configuration = conf;
             postConfigReload();
@@ -123,31 +125,40 @@ public class DockerMonitor extends AManagedMonitor {
 
     public TaskOutput execute(Map<String, String> argsMap, TaskExecutionContext taskExecutionContext) throws TaskExecutionException {
         initialize(argsMap);
-        if (configuration != null && configuration.getConfigYml() != null) {
-            Map<String, ?> config = configuration.getConfigYml();
-            if (config != null) {
-                //Check if the UNIX Socket is configured
-                if (config.get("unixSocket") != null) {
-                    getDataFromUnixSocket();
-                } else {
-                    logger.debug("Unix Sockets are not configured");
-                }
+        if (configuration != null) {
+            configuration.executeTask();
+        } else {
+            logger.error("Not running the Docker Monitor since the configuration was not initialized");
+        }
+        return null;
+    }
 
-                //Check the TCP sockets
-                List tcpSockets = (List) config.get("tcpSockets");
-                if (tcpSockets != null && tcpSockets.size() > 0) {
-                    getDataFromTcpSockets();
+    protected class TaskRunner implements Runnable {
+        public void run() {
+            if (configuration != null && configuration.getConfigYml() != null) {
+                Map<String, ?> config = configuration.getConfigYml();
+                if (config != null) {
+                    //Check if the UNIX Socket is configured
+                    if (config.get("unixSocket") != null) {
+                        getDataFromUnixSocket();
+                    } else {
+                        logger.debug("Unix Sockets are not configured");
+                    }
+                    //Check the TCP sockets
+                    List tcpSockets = (List) config.get("tcpSockets");
+                    if (tcpSockets != null && tcpSockets.size() > 0) {
+                        getDataFromTcpSockets();
+                    } else {
+                        logger.debug("NO TCP sockets are configured");
+                    }
                 } else {
-                    logger.debug("NO TCP sockets are configured");
+                    logger.error("The docker config is null, please check the config.yml");
                 }
             } else {
-                logger.error("The docker config is null, please check the file {}", argsMap.get("config-file"));
+                logger.error("Not running the Docker Monitor since there was an error during configuration");
             }
-        } else {
-            logger.error("Not running the Docker Monitor since there was an error during configuration");
+            dashboardTask.run(metricMap.asMap().keySet());
         }
-        dashboardTask.run(metricMap.asMap().keySet());
-        return null;
     }
 
     private void getDataFromUnixSocket() {

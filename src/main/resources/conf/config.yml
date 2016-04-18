@@ -3,8 +3,8 @@
 #This will create this metric in all the tiers, under this path
 metricPrefix: Custom Metrics|Docker
 
-#This will create it in specific Tier. Replace <TIER_NAME>
-#metricPrefix: Server|Component:<TIER_NAME>|Custom Metrics|Docker
+#This will create it in specific Tier. Replace <TIER_ID>
+#metricPrefix: Server|Component:<TIER_ID>|Custom Metrics|Docker
 
 # If the TCP Socket is Not Enabled, use this.
 # Either the Machine Agent should be run as root,
@@ -93,7 +93,6 @@ customDashboard:
     enabled: true
     namePrefix: Docker Monitor
     uploadDashboard: true
-    overwriteDashboard: false
     executionFrequencyMinutes: 5
     # To upload the dashboard, please create a user from Controller UI or
     # add the credentials of an existing user.
