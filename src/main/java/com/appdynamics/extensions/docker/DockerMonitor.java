@@ -439,7 +439,7 @@ public class DockerMonitor extends AManagedMonitor {
                     + "] metric = " + metricName + " = " + value);
         }
         configuration.getMetricWriter()
-                .printMetric(metricName, metricValue, aggregationType, timeRollup, clusterRollup);
+                .printMetric(metricName, value, aggregationType, timeRollup, clusterRollup);
     }
 
     protected void printCollectiveObservedCurrent(String metricName, String metricValue) {
