@@ -247,8 +247,9 @@ public class DockerMonitor extends AManagedMonitor {
                 BigInteger sysUsageDiff = systemUsage.subtract(prevSystemUsage);
                 printCollectiveObservedAverage(containerName + "|CPU|Total %", percentage(totalCpuDiff, sysUsageDiff));
             } else {
-                logger.warn("Cannot Calculate CPU %, some values are null, totalUsage={}, systemUsage={}, prevTotalUsage={}, prevSystemUsage={}"
-                        , totalUsage, systemUsage, prevTotalUsage, prevSystemUsage);
+                logger.info("Cannot Calculate CPU % for container {}, some values are null, totalUsage={}, systemUsage={}, prevTotalUsage={}, prevSystemUsage={}. " +
+                                "This will happen if the container is new and it will take two cycles to calculate CPU%."
+                        ,containerId, totalUsage, systemUsage, prevTotalUsage, prevSystemUsage);
             }
             if (totalUsage != null && systemUsage != null) {
                 logger.debug("Adding data to the cache, totalUsage={}, systemUsage={}"

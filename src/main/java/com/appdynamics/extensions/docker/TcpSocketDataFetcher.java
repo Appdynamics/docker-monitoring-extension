@@ -1,5 +1,6 @@
 package com.appdynamics.extensions.docker;
 
+import com.appdynamics.extensions.StringUtils;
 import com.appdynamics.extensions.http.Response;
 import com.appdynamics.extensions.http.SimpleHttpClient;
 import com.appdynamics.extensions.http.UrlBuilder;
@@ -59,7 +60,7 @@ public class TcpSocketDataFetcher implements DataFetcher {
 
     private <T> T getJsonPartial(String url, Class<T> clazz) {
         Response response = client.target(url).get();
-        if(response.getStatus() == 200){
+        if (response.getStatus() == 200) {
             try {
                 InputStream in = response.inputStream();
                 BufferedReader br = new BufferedReader(new InputStreamReader(in));
@@ -67,11 +68,15 @@ public class TcpSocketDataFetcher implements DataFetcher {
                 while (++count <= 3) {
                     String jsonStr = br.readLine();
                     logger.debug("The url {} returned the streaming data {}", url, jsonStr);
-                    try {
-                        return objectMapper.readValue(jsonStr, clazz);
-                    } catch (Exception e) {
-                        logger.error("Error while reading {}, response is {}", url, jsonStr);
-                        logger.error("", e);
+                    if (StringUtils.hasText(jsonStr)) {
+                        try {
+                            return objectMapper.readValue(jsonStr, clazz);
+                        } catch (Exception e) {
+                            logger.error("Error while reading {}, response is {}", url, jsonStr);
+                            logger.error("", e);
+                        }
+                    } else {
+                        logger.debug("The url {} returned the no data {}", url, jsonStr);
                     }
                 }
             } catch (IOException e) {
@@ -79,7 +84,7 @@ public class TcpSocketDataFetcher implements DataFetcher {
             } finally {
                 response.abort();
             }
-        } else{
+        } else {
             return onHttpError(url, response);
         }
         return null;
