@@ -9,13 +9,14 @@ metricPrefix: Custom Metrics|Docker
 # If the TCP Socket is Not Enabled, use this.
 # Either the Machine Agent should be run as root,
 # Or the current user needs password-less sudo access
-# In the newer versions of Docker(1.8.2+) the stats api is not compatible with the extension. In that case use only tcp socket
+# This needs curl 7.40 or higher. If not, comment this and use TCP sockets.
 unixSocket:
     commandFile: monitors/DockerMonitor/socket-command.sh
     name: UnixSocket
 
 # If the Docker is listening to the TCP port, use this.
 # The advantage is same machine agent can query multiple docker instances
+# Make sure that the TCP sockets are bound to the docker demon.
 tcpSockets:
     - baseUrl: http://127.0.0.1:2375
       name: Server1
