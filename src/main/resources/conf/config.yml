@@ -24,6 +24,11 @@ tcpSockets:
 #Can have multiple TCP Sockets
 #    - baseUrl: http://192.168.1.135:2375
 
+# How the container name is derived, default is ${CONTAINER_NAME}
+# Allowed variables are ${HOSTNAME} ${CONTAINER_NAME} and ${CONTAINER_ID}
+# These variables can be combined also. ${HOSTNAME} is HOSTNAME of container
+#containerNaming: "${HOSTNAME}_${CONTAINER_NAME}"
+
 # List of metrics that needs to be fetched
 metrics:
     containers:

@@ -136,7 +136,7 @@ public class DockerMonitorTest {
                 .when(monitor).buildSimpleHttpClient(Mockito.anyMap());
         MetricWriteHelper writer = Mockito.mock(MetricWriteHelper.class);
         DockerMonitor.TaskRunner taskRunner = monitor.new TaskRunner();
-        MonitorConfiguration mc = new MonitorConfiguration((String) config.get("metricPrefix"),taskRunner,writer);
+        MonitorConfiguration mc = new MonitorConfiguration((String) config.get("metricPrefix"), taskRunner, writer);
         mc = Mockito.spy(mc);
         Mockito.doReturn(config).when(mc).getConfigYml();
         monitor.configuration = mc;
@@ -234,6 +234,8 @@ public class DockerMonitorTest {
                     return loadJson("/json/container-stats_2.json", JsonNode.class);
                 } else if (path.contains("3/stats")) {
                     return loadJson("/json/container-stats_3.json", JsonNode.class);
+                } else if (path.contains("/containers/1/json")) {
+                    return loadJson("/json/container.json", JsonNode.class);
                 }
 
                 return null;
@@ -249,6 +251,54 @@ public class DockerMonitorTest {
     private Map loadYaml() {
         Yaml yaml = new Yaml();
         return (Map) yaml.load(getClass().getResourceAsStream("/conf/config.yml"));
+    }
+
+    @Test
+    public void deriveContainerNameWith() throws TaskExecutionException, IOException {
+        Map config = loadYaml();
+        config.put("metricPrefix", "Test|Docker|||");
+
+        config.remove("unixSocket");
+        List<Map> tcpSockets = new ArrayList<Map>();
+        tcpSockets.add(Collections.singletonMap("baseUrl", ""));
+        config.put("tcpSockets", tcpSockets);
+
+        Map<String, String> expectedValueMap = getExpectedValueMap("Test|Docker");
+        DockerMonitor monitor = createMonitor(config, expectedValueMap);
+        TcpSocketDataFetcher dataFetcher = monitor.getTcpSocketDataFetcher(Mockito.mock(Map.class),
+                Mockito.mock(SimpleHttpClient.class));
+        ArrayNode containers = (ArrayNode) loadJson("/json/containers.json", JsonNode.class);
+        String containerName = monitor.deriveContainerName(containers.get(0), "1", dataFetcher);
+        Assert.assertEquals("/rabbit1", containerName);
+
+
+        config.put("containerNaming", "${HOSTNAME}_${CONTAINER_NAME}");
+        containerName = monitor.deriveContainerName(containers.get(0), "1", dataFetcher);
+        Assert.assertEquals("rabbit.host_/rabbit1", containerName);
+
+        config.put("containerNaming", "${HOSTNAME}_${CONTAINER_ID}");
+        containerName = monitor.deriveContainerName(containers.get(0), "1", dataFetcher);
+        Assert.assertEquals("rabbit.host_1", containerName);
+
+        config.put("containerNaming", "${HOSTNAME}+${CONTAINER_NAME}");
+        containerName = monitor.deriveContainerName(containers.get(0), "1", dataFetcher);
+        Assert.assertEquals("rabbit.host+/rabbit1", containerName);
+
+        config.put("containerNaming", "${HOSTNAME}");
+        containerName = monitor.deriveContainerName(containers.get(0), "1", dataFetcher);
+        Assert.assertEquals("rabbit.host", containerName);
+
+        config.put("containerNaming", "${CONTAINER_ID}");
+        containerName = monitor.deriveContainerName(containers.get(0), "1", dataFetcher);
+        Assert.assertEquals("1", containerName);
+
+        config.put("containerNaming", "${HOSTNAME1}/${CONTAINER_NAME}");
+        containerName = monitor.deriveContainerName(containers.get(0), "1", dataFetcher);
+        Assert.assertEquals("/rabbit1", containerName);
+
+        config.put("containerNaming", "PREFIX-${HOSTNAME}");
+        containerName = monitor.deriveContainerName(containers.get(0), "1", dataFetcher);
+        Assert.assertEquals("PREFIX-rabbit.host", containerName);
     }
 
 }

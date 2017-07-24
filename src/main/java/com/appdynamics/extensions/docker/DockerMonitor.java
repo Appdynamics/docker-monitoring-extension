@@ -8,6 +8,7 @@ import com.appdynamics.extensions.conf.MonitorConfiguration.ConfItem;
 import com.appdynamics.extensions.dashboard.CustomDashboardTask;
 import com.appdynamics.extensions.http.SimpleHttpClient;
 import com.appdynamics.extensions.http.SimpleHttpClientBuilder;
+import com.appdynamics.extensions.util.JsonUtils;
 import com.appdynamics.extensions.util.MetricWriteHelper;
 import com.appdynamics.extensions.util.MetricWriteHelperFactory;
 import com.google.common.cache.Cache;
@@ -188,7 +189,8 @@ public class DockerMonitor extends AManagedMonitor {
         if (containers != null) {
             for (JsonNode container : containers) {
                 String containerId = getStringValue("Id", container);
-                String containerName = getContainerName(container);
+                String containerName = deriveContainerName(container, containerId, dataFetcher);
+                logger.debug("The container name for [{}] is resolved to [{}]", containerId, containerName);
                 //Send the container Metrics
                 String prefix = metricPrefix + containerName;
                 printMetrics(container, getMetricConf("containers"), prefix);
@@ -249,7 +251,7 @@ public class DockerMonitor extends AManagedMonitor {
             } else {
                 logger.info("Cannot Calculate CPU % for container {}, some values are null, totalUsage={}, systemUsage={}, prevTotalUsage={}, prevSystemUsage={}. " +
                                 "This will happen if the container is new and it will take two cycles to calculate CPU%."
-                        ,containerId, totalUsage, systemUsage, prevTotalUsage, prevSystemUsage);
+                        , containerId, totalUsage, systemUsage, prevTotalUsage, prevSystemUsage);
             }
             if (totalUsage != null && systemUsage != null) {
                 logger.debug("Adding data to the cache, totalUsage={}, systemUsage={}"
@@ -384,13 +386,55 @@ public class DockerMonitor extends AManagedMonitor {
         return null;
     }
 
-    protected String getContainerName(JsonNode container) {
+    protected String deriveContainerName(JsonNode container, String containerId, DataFetcher dataFetcher) {
+        Map<String, ?> configYml = configuration.getConfigYml();
+        String containerNaming = (String) configYml.get("containerNaming");
+        String containerName = getContainerName(container);
+        containerName = containerName != null ? containerName : "";
+        if (StringUtils.hasText(containerNaming)) {
+            String name = containerNaming;
+            if (name.contains("${HOSTNAME}")) {
+                String hostName = getContainerHostName(containerId, dataFetcher);
+                hostName = hostName != null ? hostName : null;
+                name = name.replace("${HOSTNAME}", hostName);
+            }
+            name = name.replace("${CONTAINER_NAME}", containerName)
+                    .replace("${CONTAINER_ID}", containerId);
+            if (StringUtils.hasText(name)) {
+                if (!name.contains("$") && !name.contains("{") && !name.contains("}")) {
+                    return name;
+                } else {
+                    logger.error("The container naming [{}] didnt fully resolve. The original value is [{}]"
+                            , name, containerNaming);
+                    return StringUtils.hasText(containerName) ? containerName : containerId;
+                }
+            } else {
+                logger.warn("The container naming [{}] variables resolved to empty.", name);
+                return StringUtils.hasText(containerName) ? containerName : containerId;
+            }
+        } else {
+            logger.debug("The container naming is not set, so defaulting to name");
+            return StringUtils.hasText(containerName) ? containerName : containerId;
+        }
+    }
+
+    private String getContainerHostName(String containerId, DataFetcher dataFetcher) {
+        JsonNode jsonNode = dataFetcher.fetchData("/containers/" + containerId + "/json", JsonNode.class, true);
+        if (jsonNode != null) {
+            JsonNode object = JsonUtils.getNestedObject(jsonNode, "Config", "Hostname");
+            if (object != null) {
+                return object.getTextValue();
+            }
+        }
+        return null;
+    }
+
+    private String getContainerName(JsonNode container) {
         ArrayNode names = (ArrayNode) container.get("Names");
         if (names != null && names.size() > 0) {
             return names.get(0).getTextValue();
         } else {
-            logger.debug("The names attribute of the container is empty {}. Using the Id instead", names);
-            return getStringValue("Id", container);
+            return null;
         }
     }
 

@@ -1,0 +1,201 @@
+{
+  "Id": "e844284f343aa26d1155149607fb3454302bf9cdfe14c91afa231fea1cd7215f",
+  "Created": "2017-06-16T15:22:51.124878427Z",
+  "Path": "/root/run.sh",
+  "Args": [],
+  "State": {
+    "Status": "running",
+    "Running": true,
+    "Paused": false,
+    "Restarting": false,
+    "OOMKilled": false,
+    "Dead": false,
+    "Pid": 32720,
+    "ExitCode": 0,
+    "Error": "",
+    "StartedAt": "2017-06-16T15:22:51.837473458Z",
+    "FinishedAt": "0001-01-01T00:00:00Z"
+  },
+  "Image": "sha256:702856ab15be7b4b2ca32c1f74b75c8e49bf0fa2fc79e536c588d1ef792c943b",
+  "ResolvConfPath": "/var/lib/docker/containers/e844284f343aa26d1155149607fb3454302bf9cdfe14c91afa231fea1cd7215f/resolv.conf",
+  "HostnamePath": "/var/lib/docker/containers/e844284f343aa26d1155149607fb3454302bf9cdfe14c91afa231fea1cd7215f/hostname",
+  "HostsPath": "/var/lib/docker/containers/e844284f343aa26d1155149607fb3454302bf9cdfe14c91afa231fea1cd7215f/hosts",
+  "LogPath": "/var/lib/docker/containers/e844284f343aa26d1155149607fb3454302bf9cdfe14c91afa231fea1cd7215f/e844284f343aa26d1155149607fb3454302bf9cdfe14c91afa231fea1cd7215f-json.log",
+  "Name": "/rabbit1",
+  "RestartCount": 0,
+  "Driver": "aufs",
+  "MountLabel": "",
+  "ProcessLabel": "",
+  "AppArmorProfile": "",
+  "ExecIDs": null,
+  "HostConfig": {
+    "Binds": [],
+    "ContainerIDFile": "",
+    "LogConfig": {
+      "Type": "json-file",
+      "Config": {}
+    },
+    "NetworkMode": "default",
+    "PortBindings": {
+      "389/tcp": [
+        {
+          "HostIp": "",
+          "HostPort": "389"
+        }
+      ]
+    },
+    "RestartPolicy": {
+      "Name": "",
+      "MaximumRetryCount": 0
+    },
+    "AutoRemove": false,
+    "VolumeDriver": "",
+    "VolumesFrom": [],
+    "CapAdd": null,
+    "CapDrop": null,
+    "Dns": null,
+    "DnsOptions": null,
+    "DnsSearch": null,
+    "ExtraHosts": null,
+    "GroupAdd": null,
+    "IpcMode": "",
+    "Cgroup": "",
+    "Links": null,
+    "OomScoreAdj": 0,
+    "PidMode": "",
+    "Privileged": false,
+    "PublishAllPorts": false,
+    "ReadonlyRootfs": false,
+    "SecurityOpt": null,
+    "UTSMode": "",
+    "UsernsMode": "",
+    "ShmSize": 67108864,
+    "Runtime": "runc",
+    "ConsoleSize": [
+      0,
+      0
+    ],
+    "Isolation": "",
+    "CpuShares": 0,
+    "Memory": 0,
+    "CgroupParent": "",
+    "BlkioWeight": 0,
+    "BlkioWeightDevice": null,
+    "BlkioDeviceReadBps": null,
+    "BlkioDeviceWriteBps": null,
+    "BlkioDeviceReadIOps": null,
+    "BlkioDeviceWriteIOps": null,
+    "CpuPeriod": 0,
+    "CpuQuota": 0,
+    "CpusetCpus": "",
+    "CpusetMems": "",
+    "Devices": null,
+    "DiskQuota": 0,
+    "KernelMemory": 0,
+    "MemoryReservation": 0,
+    "MemorySwap": 0,
+    "MemorySwappiness": -1,
+    "OomKillDisable": false,
+    "PidsLimit": 0,
+    "Ulimits": null,
+    "CpuCount": 0,
+    "CpuPercent": 0,
+    "IOMaximumIOps": 0,
+    "IOMaximumBandwidth": 0
+  },
+  "GraphDriver": {
+    "Name": "aufs",
+    "Data": null
+  },
+  "Mounts": [
+    {
+      "Name": "baf5c6ae526b1909077871e29ee8a47a30d096d29d480604d448d68a9beef77a",
+      "Source": "/var/lib/docker/volumes/baf5c6ae526b1909077871e29ee8a47a30d096d29d480604d448d68a9beef77a/_data",
+      "Destination": "/data",
+      "Driver": "local",
+      "Mode": "",
+      "RW": true,
+      "Propagation": ""
+    }
+  ],
+  "Config": {
+    "Hostname": "rabbit.host",
+    "Domainname": "",
+    "User": "",
+    "AttachStdin": false,
+    "AttachStdout": false,
+    "AttachStderr": false,
+    "ExposedPorts": {
+      "389/tcp": {},
+      "636/tcp": {}
+    },
+    "Tty": false,
+    "OpenStdin": false,
+    "StdinOnce": false,
+    "Env": [
+      "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+      "DEBUG_LEVEL=256"
+    ],
+    "Cmd": [
+      "/root/run.sh"
+    ],
+    "Image": "extensions/openldap",
+    "Volumes": {
+      "/data": {}
+    },
+    "WorkingDir": "",
+    "Entrypoint": null,
+    "OnBuild": null,
+    "Labels": {
+      "com.docker.compose.config-hash": "9e5136c731c5f9f94fb80ddec5e6efe1ea75dea34f0873517969f0eb2cc8f8c4",
+      "com.docker.compose.container-number": "1",
+      "com.docker.compose.oneoff": "False",
+      "com.docker.compose.project": "openldap",
+      "com.docker.compose.service": "openldap",
+      "com.docker.compose.version": "1.9.0"
+    }
+  },
+  "NetworkSettings": {
+    "Bridge": "",
+    "SandboxID": "870b19cdd957db039335241c0e455f1ccf5db506eee5e5825e5b10e206e7c892",
+    "HairpinMode": false,
+    "LinkLocalIPv6Address": "",
+    "LinkLocalIPv6PrefixLen": 0,
+    "Ports": {
+      "389/tcp": [
+        {
+          "HostIp": "0.0.0.0",
+          "HostPort": "389"
+        }
+      ],
+      "636/tcp": null
+    },
+    "SandboxKey": "/var/run/docker/netns/870b19cdd957",
+    "SecondaryIPAddresses": null,
+    "SecondaryIPv6Addresses": null,
+    "EndpointID": "d9c1c12ced436184ddd4ce44b6de9f30afd94a440edfdc5151eab6d5c91d07ae",
+    "Gateway": "172.17.42.1",
+    "GlobalIPv6Address": "",
+    "GlobalIPv6PrefixLen": 0,
+    "IPAddress": "172.17.0.2",
+    "IPPrefixLen": 16,
+    "IPv6Gateway": "",
+    "MacAddress": "02:42:ac:11:00:02",
+    "Networks": {
+      "bridge": {
+        "IPAMConfig": null,
+        "Links": null,
+        "Aliases": null,
+        "NetworkID": "c7f0b225ea4c4dbf5ef5dbfeff85463579ab12e4c40bdff8f1a9f2f2c29bac17",
+        "EndpointID": "d9c1c12ced436184ddd4ce44b6de9f30afd94a440edfdc5151eab6d5c91d07ae",
+        "Gateway": "172.17.42.1",
+        "IPAddress": "172.17.0.2",
+        "IPPrefixLen": 16,
+        "IPv6Gateway": "",
+        "GlobalIPv6Address": "",
+        "GlobalIPv6PrefixLen": 0,
+        "MacAddress": "02:42:ac:11:00:02"
+      }
+    }
+  }
+}
