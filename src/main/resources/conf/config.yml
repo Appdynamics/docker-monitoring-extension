@@ -104,6 +104,7 @@ customDashboard:
     # add the credentials of an existing user.
     username: "ControllerUI_user"
     password: "PlainTextPassword"
+    account: "customer1"
     #passwordEncrypted: "ControllerUI_password_encrypted"
     #encryptionKey: "welcome"
 
