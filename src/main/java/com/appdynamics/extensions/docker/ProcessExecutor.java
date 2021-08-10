@@ -8,6 +8,7 @@
 
 package com.appdynamics.extensions.docker;
 
+import com.appdynamics.extensions.logging.ExtensionsLoggerFactory;
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpParser;
 import org.slf4j.Logger;
@@ -25,7 +26,7 @@ import java.util.Arrays;
  * Created by abey.tom on 3/31/15.
  */
 public class ProcessExecutor {
-    public static final Logger logger = LoggerFactory.getLogger(ProcessExecutor.class);
+    public static final Logger logger = ExtensionsLoggerFactory.getLogger(ProcessExecutor.class);
 
     public String execute(String[] commands, boolean readFully) {
         try {

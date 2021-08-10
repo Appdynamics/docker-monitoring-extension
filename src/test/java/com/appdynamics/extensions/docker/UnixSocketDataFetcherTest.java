@@ -8,12 +8,12 @@
 
 package com.appdynamics.extensions.docker;
 
+import com.appdynamics.extensions.logging.ExtensionsLoggerFactory;
+import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.commons.io.FileUtils;
-import org.codehaus.jackson.JsonNode;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -23,7 +23,7 @@ import java.io.InputStream;
  * Created by abey.tom on 4/3/15.
  */
 public class UnixSocketDataFetcherTest {
-    public static final Logger logger = LoggerFactory.getLogger(UnixSocketDataFetcherTest.class);
+    public static final Logger logger = ExtensionsLoggerFactory.getLogger(UnixSocketDataFetcherTest.class);
 
     @Test
     public void multilineResponseTest() throws IOException {
@@ -31,7 +31,7 @@ public class UnixSocketDataFetcherTest {
             File file = copyAndGetPath("/raw/multiline.sh");
             UnixSocketDataFetcher fetcher = new UnixSocketDataFetcher(file.getAbsolutePath());
             JsonNode jsonNode = fetcher.fetchData("/info", JsonNode.class, true);
-            Assert.assertEquals(4,jsonNode.get("Containers").getIntValue());
+            Assert.assertEquals(4,jsonNode.get("Containers").asInt());
         } else {
             logger.warn("Unsupported OS for this test case");
         }
@@ -42,7 +42,7 @@ public class UnixSocketDataFetcherTest {
             File file = copyAndGetPath("/raw/singleline.sh");
             UnixSocketDataFetcher fetcher = new UnixSocketDataFetcher(file.getAbsolutePath());
             JsonNode jsonNode = fetcher.fetchData("/info", JsonNode.class, false);
-            Assert.assertEquals(4,jsonNode.get("Containers").getIntValue());
+            Assert.assertEquals(4,jsonNode.get("Containers").asInt());
         } else {
             logger.warn("Unsupported OS for this test case");
         }

@@ -9,6 +9,7 @@
 <monitor>
     <name>DockerStatusMonitor</name>
     <type>managed</type>
+    <enabled>true</enabled>
     <description>Monitors Docker</description>
     <monitor-configuration>
     </monitor-configuration>
@@ -19,7 +20,7 @@
         <display-name>Docker Status Monitor Task</display-name>
         <description>Docker Status Monitor Task</description>
         <type>java</type>
-        <execution-timeout-in-secs>120</execution-timeout-in-secs>
+        <execution-timeout-in-secs>60</execution-timeout-in-secs>
         <task-arguments>
             <argument name="config-file" is-required="true" default-value="monitors/DockerMonitor/config.yml" />
         </task-arguments>
