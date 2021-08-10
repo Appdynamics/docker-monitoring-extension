@@ -8,22 +8,19 @@
 
 package com.appdynamics.extensions.docker;
 
-import com.appdynamics.extensions.StringUtils;
-import org.codehaus.jackson.map.ObjectMapper;
+import com.appdynamics.extensions.logging.ExtensionsLoggerFactory;
+import com.appdynamics.extensions.util.StringUtils;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.math.RoundingMode;
 import java.util.Arrays;
 
 /**
  * Created by abey.tom on 4/1/15.
  */
 public class UnixSocketDataFetcher implements DataFetcher {
-    public static final Logger logger = LoggerFactory.getLogger(UnixSocketDataFetcher.class);
+    public static final Logger logger = ExtensionsLoggerFactory.getLogger(UnixSocketDataFetcher.class);
     private static final ObjectMapper objectMapper = new ObjectMapper();
     private static final ProcessExecutor processExecutor = new ProcessExecutor();
 
@@ -47,15 +44,5 @@ public class UnixSocketDataFetcher implements DataFetcher {
             logger.error("The command {} returned [{}]", Arrays.toString(commands), json);
             return null;
         }
-    }
-
-    private static String divide(BigInteger totalUsage, long along) {
-        BigDecimal bigDecimal = new BigDecimal(totalUsage);
-        return bigDecimal.divide(new BigDecimal(along),2,BigDecimal.ROUND_HALF_UP).setScale(2, BigDecimal.ROUND_HALF_UP).toString();
-    }
-
-    private static String divide(BigInteger totalUsage, BigInteger sysUsage) {
-        BigDecimal bigDecimal = new BigDecimal(totalUsage).multiply(new BigDecimal("100"));
-        return bigDecimal.divide(new BigDecimal(sysUsage), 2, RoundingMode.HALF_UP).setScale(2, BigDecimal.ROUND_HALF_UP).toString();
     }
 }

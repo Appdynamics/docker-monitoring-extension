@@ -1,9 +1,9 @@
 #Metric prefix used when SIM is enabled for your machine agent
-#metricPrefix: Custom Metrics|Docker
+metricPrefix: Custom Metrics|Docker
 
 #This will publish metrics to specific tier
 #Instructions on how to retrieve the Component ID can be found in the Metric Prefix section of https://community.appdynamics.com/t5/Knowledge-Base/How-do-I-troubleshoot-missing-custom-metrics-or-extensions/ta-p/28695
-metricPrefix: Server|Component:<TIER_ID>|Custom Metrics|Docker
+#metricPrefix: Server|Component:<TIER_ID>|Custom Metrics|Docker
 
 # If the TCP Socket is Not Enabled, use this.
 # Either the Machine Agent should be run as root,
@@ -17,7 +17,7 @@ metricPrefix: Server|Component:<TIER_ID>|Custom Metrics|Docker
 # The advantage is same machine agent can query multiple docker instances
 # Make sure that the TCP sockets are bound to the docker demon.
 servers:
-  - uri: "http://127.0.0.1:2375"
+  - uri: "http://127.0.0.1:2378"
     name: "Server1"
 
 #Can have multiple TCP Sockets
@@ -236,27 +236,3 @@ metrics:
 #derivedMetrics:
 #  - derivedMetricPath: "{x}|{y}|Memory Percent"
 #    formula: "({x}|{y}|memory|Current Usage * 100) / {x}|{y}|memory|Limit"
-
-# Generate a custom dashboard based on the provided template
-# If any of the following fields are not set, the values of the specific fields are set from the system properties of the corresponding fields as specified in the comments.
-# If the system properties are not set for the field, then the data is retrieved from machine agent configFile. Please refer to ControllerInfoFactory for more details.
-# Values provided here can be overridden if the same field is configured in either controller-info.xml or system properties.
-controllerInfo:
-  controllerHost: ""  # -Dappdynamics.controller.hostName
-  controllerPort:  # -Dappdynamics.controller.port
-  controllerSslEnabled: false # -Dappdynamics.controller.ssl.enabled
-  enableOrchestration: false # N/A
-  uniqueHostId: "" # -Dappdynamics.agent.uniqueHostId
-  username: "admin" # -Dappdynamics.agent.monitors.controller.username
-  password: "" # -Dappdynamics.agent.monitors.controller.password
-  encryptedPassword: "j+0oxTzUtw2xAdaq4UUq/Q==" # -Dappdynamics.agent.monitors.controller.encryptedPassword
-  accountAccessKey: "" # -Dappdynamics.agent.accountAccessKey
-  account: "" # -Dappdynamics.agent.accountName
-  machinePath: "" # -Dappdynamics.machine.agent.hierarchyPath
-  simEnabled: false # -Dappdynamics.sim.enabled
-  applicationName: "" # -Dappdynamics.agent.applicationName
-  tierName: "" # -Dappdynamics.agent.tierName
-  nodeName: "" # -Dappdynamics.agent.nodeName
-
-#Encryption key for your controllerInfo password
-encryptionKey: "abcd"
