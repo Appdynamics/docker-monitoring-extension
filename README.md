@@ -1,4 +1,4 @@
-# AppDynamics Monitoring Extension for use with Docker
+# Docker Monitoring Extension
 
 ## Use Case
 Docker is an open platform for developers and sysadmins to build, ship, and run distributed applications.Docker Monitoring extension gathers metrics from the Docker Remote API, either using Unix Socket or TCP.
