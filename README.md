@@ -13,7 +13,7 @@ Docker is an open platform for developers and sysadmins to build, ship, and run 
 5. *Unix Socket*: The extension will be able to fetch the data over the Unix Sockets if the CURL v 7.40+ is installed. Fetching data through the Unix Socket with older versions of CURL is not supported. To use this mode to collect the data, the machine agent should be run as the root user. If this is not possible, then the current user should have password-less sudo access or he should have access to the docker socket
 
 ## Installation
-1. Run "mvn clean install"
+1. Run "mvn clean install" from "DockerMonitorRepo"
 2. Unzip the contents of DockerMonitor-\<version\>.zip file (&lt;DockerMonitor&gt; / targets) and copy the directory to `<your-machine-agent-dir>/monitors`.
 3. Edit config.yml file and provide the required configuration (see Configuration section)
 4. Restart the Machine Agent.
@@ -317,7 +317,8 @@ Always feel free to fork and contribute any changes directly via [GitHub](https:
 |          Name            |  Version   |
 |--------------------------|------------|
 |Extension Version         |2.0.0       |
-|Controller Compatibility  |4.5 or Later|
-|Machine Agent Version     |4.5.13+     |
 |Product Tested on         |Server: Docker Engine - Community: Version: 20.10.8 and API version: 1.41|
 |Last Update               |04/08/2021  |
+|Change List               |[ChangeLog](https://github.com/Appdynamics/docker-monitoring-extension/blob/master/CHANGELOG.md)|
+
+**Note**: While extensions are maintained and supported by customers under the open-source licensing model, they interact with agents and Controllers that are subject to [AppDynamics’ maintenance and support policy](https://docs.appdynamics.com/latest/en/product-and-release-announcements/maintenance-support-for-software-versions). Some extensions have been tested with AppDynamics 4.5.13+ artifacts, but you are strongly recommended against using versions that are no longer supported.
