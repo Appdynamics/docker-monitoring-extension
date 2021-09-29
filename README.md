@@ -5,7 +5,8 @@ Docker is an open platform for developers and sysadmins to build, ship, and run 
 
 ## Prerequisites
 1. Before the extension is installed, the prerequisites mentioned [here](https://community.appdynamics.com/t5/Knowledge-Base/Extensions-Prerequisites-Guide/ta-p/35213) need to be met. Please do not proceed with the extension installation if the specified prerequisites are not met
-2. Please go through the 1st section of the doc and review the configuration.
+2. Download and install [Apache Maven](https://maven.apache.org/) which is configured with `Java 8` to build the extension artifact from source. You can check the java version used in maven using command `mvn -v` or `mvn --version`. If your maven is using some other java version then please download java 8 for your platform and set JAVA_HOME parameter before starting maven.
+3. Please go through the 1st section of the doc and review the configuration.
    https://docs.docker.com/reference/api/docker_remote_api/
 3. The Stats API `GET /containers/(id)/stats` is available only from Docker API version 1.17 (Docker version ~1.8) onwards. If you are using an older version, the CPU Stats, Memory Stats and Network Stats will not be available.
 4. *TCP Socket*: The docker daemon should be bound to the tcp socket. Please refer to this [document](https://docs.docker.com/engine/reference/commandline/dockerd/) for details. This is the command to bind the docker daemon to both TCP Socket and Unix Socket
@@ -13,10 +14,11 @@ Docker is an open platform for developers and sysadmins to build, ship, and run 
 5. *Unix Socket*: The extension will be able to fetch the data over the Unix Sockets if the CURL v 7.40+ is installed. Fetching data through the Unix Socket with older versions of CURL is not supported. To use this mode to collect the data, the machine agent should be run as the root user. If this is not possible, then the current user should have password-less sudo access or he should have access to the docker socket
 
 ## Installation
-1. Run "mvn clean install" from "DockerMonitorRepo"
-2. Unzip the contents of DockerMonitor-\<version\>.zip file (&lt;DockerMonitor&gt; / targets) and copy the directory to `<your-machine-agent-dir>/monitors`.
-3. Edit config.yml file and provide the required configuration (see Configuration section)
-4. Restart the Machine Agent.
+1. Clone the "docker-monitoring-extension" repo using `git clone <repoUrl>` command.
+2. Run "mvn clean install" from "docker-monitoring-extension"
+3. Unzip the contents of DockerMonitor-\<version\>.zip file (&lt;DockerMonitor&gt; / targets) and copy the directory to `<your-machine-agent-dir>/monitors`.
+4. Edit config.yml file and provide the required configuration (see Configuration section)
+5. Restart the Machine Agent.
 
 Please place the extension in the **"monitors"** directory of your **Machine Agent** installation directory. Do not place the extension in the **"extensions"** directory of your **Machine Agent** installation directory.
 
