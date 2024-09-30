@@ -9,8 +9,14 @@
 package com.appdynamics.extensions.docker;
 
 import com.appdynamics.extensions.logging.ExtensionsLoggerFactory;
-import org.apache.commons.httpclient.Header;
-import org.apache.commons.httpclient.HttpParser;
+import org.apache.hc.core5.http.Header;
+import org.apache.hc.core5.http.impl.io.DefaultHttpResponseParser;
+import org.apache.hc.core5.http.impl.io.SessionInputBufferImpl;
+import org.apache.hc.core5.http.io.SessionInputBuffer;
+import org.apache.hc.core5.http.message.BasicLineParser;
+import org.apache.hc.core5.http.message.LineParser;
+import org.apache.hc.core5.http.message.StatusLine;
+import org.apache.hc.core5.util.CharArrayBuffer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,6 +24,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.CharsetDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 /**
@@ -62,31 +70,66 @@ public class ProcessExecutor {
 
         public void run() {
             InputStream inputStream = process.getInputStream();
+            CharsetDecoder utf8Decoder = StandardCharsets.UTF_8.newDecoder();
+            SessionInputBuffer sessionInputBuffer = new SessionInputBufferImpl(256, utf8Decoder);
+            LineParser lineParser = new BasicLineParser();
+            CharArrayBuffer buffer = new CharArrayBuffer(256);
+
             try {
-                String statusLine = HttpParser.readLine(inputStream, "UTF-8");
-                logger.debug("The status line is {}", statusLine);
-                if (statusLine.contains("200 OK")) {
-                    Header[] headers = HttpParser.parseHeaders(inputStream, "UTF-8");
+                sessionInputBuffer.readLine(buffer, inputStream);
+                StatusLine statusLine = lineParser.parseStatusLine(buffer);
+                if (statusLine.getStatusCode() == 200) {
+                    Header[] headers = DefaultHttpResponseParser.parseHeaders(sessionInputBuffer,
+                            inputStream, 0, 0, lineParser);
                     if (logger.isDebugEnabled()) {
                         logger.debug("The response headers are {}", Arrays.toString(headers));
                     }
                     if (readFully) {
-                        String temp;
                         StringBuilder sb = new StringBuilder();
-                        while ((temp = HttpParser.readLine(inputStream, "UTF-8")) != null) {
-                            sb.append(temp);
-                            logger.debug("Reading chunks of data {}", temp);
+                        while (true) {
+                            buffer.clear();
+                            int count = sessionInputBuffer.readLine(buffer, inputStream);
+                            if (count == -1) {
+                                break;
+                            }
+                            sb.append(buffer);
                         }
                         data = sb.toString();
                     } else {
-                        data = HttpParser.readLine(inputStream, "UTF-8");
+                        data = null;
+                        buffer.clear();
+                        int count = sessionInputBuffer.readLine(buffer, inputStream);
+                        if (count != -1) {
+                            data = buffer.toString();
+                        }
                         logger.debug("Read Single line of response data is {}", data);
                     }
 
                 } else {
-                    printErrorDetails(inputStream, statusLine);
+                    StringBuilder sb = new StringBuilder(statusLine.toString()).append("\n");
+                    Header[] headers = DefaultHttpResponseParser.parseHeaders(sessionInputBuffer,
+                            inputStream, 0, 0, lineParser);
+                    for (Header header : headers) {
+                        sb.append(header.getName()).append(": ").append(header.getValue()).append("\n");
+                    }
+
+                    int lines = 0;
+                    while (true) {
+                        buffer.clear();
+                        int count = sessionInputBuffer.readLine(buffer, inputStream);
+                        if (count == -1) {
+                            break;
+                        }
+                        sb.append(buffer).append("\n");
+
+                        if (++lines > 20) {
+                            logger.warn("Truncating the response body to 20 lines");
+                            break;
+                        }
+                    }
+                    logger.error("The command {} returned error response {}", Arrays.toString(commands), sb);
                 }
-            } catch (IOException e) {
+            } catch (Exception e) {
                 logger.error("Error while executing the command " + Arrays.toString(commands), e);
             } finally {
                 try {
@@ -103,24 +146,6 @@ public class ProcessExecutor {
 
         public String getData() {
             return data;
-        }
-
-        private void printErrorDetails(InputStream inputStream, String statusLine) throws IOException {
-            StringBuilder sb = new StringBuilder(statusLine).append("\n");
-            Header[] headers = HttpParser.parseHeaders(inputStream, "UTF-8");
-            for (Header header : headers) {
-                sb.append(header.getName()).append(": ").append(header.getValue()).append("\n");
-            }
-            String temp;
-            int count = 0;
-            while ((temp = HttpParser.readLine(inputStream, "UTF-8")) != null) {
-                sb.append(temp).append("\n");
-                if (++count > 20) {
-                    logger.warn("Truncating the response body to 20 lines");
-                    break;
-                }
-            }
-            logger.error("The command {} returned error response {}", Arrays.toString(commands), sb);
         }
     }
 
