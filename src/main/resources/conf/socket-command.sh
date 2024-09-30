@@ -14,5 +14,4 @@
 ##### Using CURL: Needs CURL v7.40+                            #########
 ##### This will not work with earlier versions of CURL         #########
 ########################################################################
-sudo curl -s -S -i --unix-socket /var/run/docker.sock  http:$1
-
+sudo curl -s -S -i --unix-socket /var/run/docker.sock "http://localhost$1"
