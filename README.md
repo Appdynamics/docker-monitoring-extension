@@ -291,7 +291,7 @@ Workbench is an inbuilt feature provided with each extension in order to assist 
 2. Verify Machine Agent Data: Please start the Machine Agent without the extension and make sure that it reports data. Verify that the machine agent status is UP and it is reporting Hardware Metrics
 3. *Unix Socket*: This needs curl v7.40+. To troubleshoot unix socket, please try to run this command and see if it returns a valid JSON data in addition to the http headers. If needed, change the API from `/containers/id/stats` to whichever one you want to test.
  
-   `sudo curl -s -S -i --unix-socket /var/run/docker.sock  http:/containers/$CONTAINER_ID/stats`
+   `sudo curl -s -S -i --unix-socket /var/run/docker.sock http://localhost/containers/$CONTAINER_ID/stats`
 
    Please update the `$CONTAINER_ID`. If this API doesn't return any JSON data in the response in addition to http headers or if any other issues are observed while fetching  data via Unix socket, then you will have to enable TCP sockets. Please refer to Prerequisites #3 on how to enable TCP Sockets. Then modify the config.yml and uncomment the servers section accordingly. Comment out the unixSocket section in config.yml
 4. *TCP Socket*: To troubleshoot TCP, make sure that the following commands returns a valid JSON output
@@ -309,18 +309,15 @@ For e.g.,
 ---Response is truncated---
 ```
 
-## Known Issues
-The extension doesn't work with the newer versions Docker Unix Socket. Please enable the TCP socket. For more details on how to bind TCP socket to docker daemon, please refer to the Prerequisites #4
-
 ## Contributing
 Always feel free to fork and contribute any changes directly via [GitHub](https://github.com/Appdynamics/docker-monitoring-extension)
 
 ## Version
 |          Name            |  Version   |
 |--------------------------|------------|
-|Extension Version         |2.0.0       |
-|Product Tested on         |Server: Docker Engine - Community: Version: 20.10.8 and API version: 1.41|
-|Last Update               |04/08/2021  |
+|Extension Version         |2.0.1       |
+|Product Tested on         |Server: docker.io 24.0.7-0ubuntu4.1 and API version: 1.43|
+|Last Update               |02/10/2024  |
 |Change List               |[ChangeLog](https://github.com/Appdynamics/docker-monitoring-extension/blob/master/CHANGELOG.md)|
 
 **Note**: While extensions are maintained and supported by customers under the open-source licensing model, they interact with agents and Controllers that are subject to [AppDynamics’ maintenance and support policy](https://docs.appdynamics.com/latest/en/product-and-release-announcements/maintenance-support-for-software-versions). Some extensions have been tested with AppDynamics 4.5.13+ artifacts, but you are strongly recommended against using versions that are no longer supported.

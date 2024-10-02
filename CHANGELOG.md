@@ -1,5 +1,12 @@
 ## Docker Monitoring Extension Change Log
 
+### version 2.0.1
+* Updated to appd-exts-commons 2.2.13
+* Fixed Unix socket support
+* Updated README.md
+* Moved and updated LICENSE.txt to LICENSE
+* Added USE_CASE.md
+
 ### version 2.0.0
 * Updated to appd-exts-commons 2.2.4
 * Added support for JRE 11
